@@ -5,7 +5,7 @@ const path = require('path');
 const PORT = process.env.PORT || 8000;
 
 http.createServer((req, res) => {
-  let reqPath = req.url.split('?')[0];
+  const reqPath = req.url.split('?')[0]; // Remove query string
   let filePath = '.' + (reqPath === '/' ? '/index.html' : reqPath);
   const ext = path.extname(filePath);
 
