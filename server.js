@@ -5,7 +5,8 @@ const path = require('path');
 const PORT = process.env.PORT || 8000;
 
 http.createServer((req, res) => {
-  let filePath = '.' + (req.url === '/' ? '/index.html' : req.url);
+  let reqPath = req.url.split('?')[0];
+  let filePath = '.' + (reqPath === '/' ? '/index.html' : reqPath);
   const ext = path.extname(filePath);
 
   let contentType = 'text/html';
