@@ -5,7 +5,8 @@ const path = require('path');
 const PORT = process.env.PORT || 8000;
 
 http.createServer((req, res) => {
-  const cleanPath = req.url.split('?')[0].split('#')[0];  // strips query & hash
+  // Strip off query parameters and hash fragments
+  const cleanPath = req.url.split('?')[0].split('#')[0];
   const filePath = '.' + (cleanPath === '/' ? '/index.html' : cleanPath);
   const ext = path.extname(filePath).toLowerCase();
 
@@ -23,9 +24,11 @@ http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
+      console.error(`404 Not Found: ${filePath}`);
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not Found');
     } else {
+      console.log(`200 OK: ${filePath}`);
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);
     }
