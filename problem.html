@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Problem Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body class="problem-page">
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html" class="active">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="accomodation.html">Accomodation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="problem-layout">
+    <div class="problem-text">
+      <h1 id="problem-name">Loading...</h1>
+      <p id="fa-name" class="fa-name"></p>
+      <p id="problem-description" class="problem-description"></p>
+      <p id="problem-additional" class="problem-additional"></p>
+    </div>
+
+    <div class="problem-images-container">
+      <div id="problem-images"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 KjugeBloc</p>
+  </footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const problemName = urlParams.get('name');
+
+    const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
+
+    let imageList = [];
+    let captionList = [];
+    let currentImageIndex = 0;
+
+    function showImage(index) {
+      const lightboxImg = document.getElementById('lightbox-img');
+      const caption = document.getElementById('lightbox-caption');
+
+      if (imageList[index]) {
+        lightboxImg.src = `images/problem-photos/${imageList[index]}`;
+        caption.textContent = captionList[index] || '';
+        document.getElementById('lightbox').style.display = 'flex';
+        currentImageIndex = index;
+      }
+    }
+
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        const problem = rows.map(r => r.c).find(cols => cols[8]?.v === problemName);
+        if (!problem) return;
+
+        const name = problem[8]?.v || 'Unknown';
+        const grade = problem[9]?.v || '–';
+        const rating = problem[12]?.v || '';
+        const expo = problem[11]?.v || '';
+        const description = problem[14]?.v || '';
+
+        document.getElementById('problem-name').innerHTML = `
+          ${name} 
+          <span class="problem-meta-inline">
+            <span class="grade-inline">${grade}</span>
+            <span class="rating-inline">${rating}</span>
+            <span class="expo-inline">${expo}</span>
+          </span>
+        `;
+
+        document.getElementById('problem-description').textContent = description;
+
+        const faName = problem[15]?.v || '';
+        const Year = problem[16]?.v || '';
+        const faNameEl = document.getElementById('fa-name');
+
+        if (faNameEl) {
+          if (faName || Year) {
+            let content = '';
+            if (faName) {
+              content += `<a href="person.html?name=${encodeURIComponent(faName)}" class="fa-name-link">${faName}</a>`;
+            }
+            if (Year) content += `<span style="margin-left: 10px;">${Year}</span>`;
+            faNameEl.innerHTML = content;
+          } else {
+            faNameEl.textContent = '–';
+          }
+        }
+
+        const additionalInfo = problem[23]?.v || ''; // Column 23
+        const additionalEl = document.getElementById('problem-additional');
+
+        if (additionalInfo) {
+          const formatted = additionalInfo
+            .split(';')
+            .map(part => {
+              let cleaned = part.trim();
+
+              // Handle "italic" first
+              cleaned = cleaned.replace(/"(.*?)"/g, (_, match) =>
+                `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 14px;">${match}</span>`
+              );
+
+              // Then handle [bold] without touching already inserted spans
+              cleaned = cleaned.replace(/\[(.*?)\]/g, (_, match) =>
+                `<span style="font-weight: bold;">${match}</span>`
+              );
+
+              cleaned = cleaned.replace(/!(.*?)!/g, (_, match) =>
+                `<span style="font-weight: bold; font-style: italic; color: #f79646;">${match}</span>`
+              );
+
+              return `<div style="margin-bottom: 6px;">${cleaned}</div>`;
+            })
+            .filter(Boolean)
+            .join('');
+
+          additionalEl.innerHTML = formatted;
+          additionalEl.style.display = 'block';
+        } else {
+          additionalEl.style.display = 'none';
+        }
+
+        imageList = (problem[18]?.v || '').split(',').map(s => s.trim());
+        captionList = (problem[19]?.v || '').split(';').map(s => s.trim());
+        const imageContainer = document.getElementById('problem-images');
+        const videoLinks = (problem[17]?.v || '').split(';').map(link => link.trim()).filter(Boolean);
+        const imageContainerParent = document.querySelector('.problem-images-container');
+
+        if (videoLinks.length > 0 && imageContainerParent) {
+          videoLinks.forEach(link => {
+            const iframe = document.createElement('iframe');
+            iframe.src = transformToEmbedURL(link);
+            iframe.width = '100%';
+            iframe.height = '315';
+            iframe.style.border = 'none';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            iframe.style.marginTop = '20px';
+            imageContainerParent.appendChild(iframe);
+          });
+        }
+
+        imageList.forEach((filename, index) => {
+          if (filename) {
+            const img = document.createElement('img');
+            img.src = `images/problem-photos/${filename}`;
+            img.alt = problemName;
+            img.style.cursor = 'pointer';
+            img.onerror = () => img.remove();
+
+            img.addEventListener('click', () => {
+              showImage(index);
+            });
+
+            imageContainer.appendChild(img);
+          }
+        });
+      });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.addEventListener('click', () => {
+        lightbox.style.display = 'none';
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (lightbox.style.display === 'flex') {
+          if (e.key === 'ArrowRight') {
+            const nextIndex = (currentImageIndex + 1) % imageList.length;
+            showImage(nextIndex);
+          } else if (e.key === 'ArrowLeft') {
+            const prevIndex = (currentImageIndex - 1 + imageList.length) % imageList.length;
+            showImage(prevIndex);
+          } else if (e.key === 'Escape') {
+            lightbox.style.display = 'none';
+          }
+        }
+      });
+    });
+    
+    function transformToEmbedURL(url) {
+      if (url.includes('youtube.com/watch?v=')) {
+        return url.replace('watch?v=', 'embed/');
+      }
+      if (url.includes('youtu.be/')) {
+        return url.replace('youtu.be/', 'youtube.com/embed/');
+      }
+      if (url.includes('vimeo.com/')) {
+        const id = url.split('/').pop();
+        return `https://player.vimeo.com/video/${id}`;
+      }
+      return url; // fallback (maybe already embeddable)
+    }
+  </script>
+
+  <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); flex-direction:column; justify-content:center; align-items:center; z-index:1000;">
+    <img id="lightbox-img" src="" alt="Full image" style="max-width:90vw; max-height:80vh; border-radius:8px;" />
+    <p id="lightbox-caption" style="color:#ccc; margin-top:10px; font-size:14px; text-align:center; max-width:90vw;"></p>
+  </div>
+</body>
+</html>

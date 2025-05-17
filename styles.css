@@ -1,0 +1,545 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: #2d2d2d;
+  color: #f9f9f9;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+
+.two-column {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.right-column {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end; /* align image-wrapper to the right */
+  max-width: 500px;
+}
+
+.image-wrapper {
+  text-align: center; /* center text inside the wrapper */
+}
+
+.image-wrapper img {
+  width: 70%;
+  height: auto;
+  display: block;
+  margin: 0 auto; /* ensures it's centered within image-wrapper */
+}
+
+.left-column {
+  flex: 1;
+  font-size: 12px;
+  max-width: 500px;
+  margin-right: auto;
+  margin-top: 60px;
+}
+.left-column-italics {
+  color: #999999;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 11px;
+  font-style: italic;
+  max-width: 400px;
+  margin-right: auto;
+  margin-left: 20px;
+  padding: 5px;
+}
+
+
+
+
+
+/* --- Area-index page --- */
+
+.area-index .site-branding h1,
+.area-page .site-branding h1,
+.problem-page .site-branding h1 {
+  visibility: hidden;
+}
+
+.area-columns {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.location-column {
+  flex: 1;
+}
+
+#left-locations {
+  text-align: right;
+}
+
+#right-locations {
+  text-align: left;
+}
+
+.area-index ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.area-index ul li {
+  margin-bottom: 6px;
+}
+
+.area-index ul li a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.area-index ul li a:hover {
+  text-decoration: underline;
+}
+
+
+
+
+
+/* --- Area page --- */
+
+#problems-section h2 {
+  margin-bottom: 4px; /* Reduce space below grade heading */
+}
+
+#problems-section ul {
+  margin-top: 0; /* Remove default margin above the list */
+  padding-left: 20px; /* Optional: keeps list aligned nicely */
+  margin-bottom: 30px;
+}
+
+.problem-row {
+  display: flex;
+  align-items: center
+  gap: 8px;
+}
+
+.camera-icon {
+  width: 1.5em; /* Enough space for 📷 */
+  text-align: center;
+  display: inline-block;
+  font-size: 1em;
+  margin-right: 2px;
+}
+
+.problem-meta {     /* color for expo, rating, faYear on */
+  color: #999999;
+  vertical-align: top;
+  position: relative;
+  top: -1.2px; /* adjust as needed, try -1px or -3px too */
+  font-size: 90%;
+  margin-left: 4px;
+}
+
+#problems-section ul {
+  list-style: none;
+  padding-left: 0;
+  margin-left: -25px;
+}
+
+.expo {             /* expo as thick exclamation mark */
+  font-family: 'Arial Black', Gadget, sans-serif;
+  position: static;
+  top: -0px;
+  color: #cc0000;
+}
+
+.rating {
+  font-size: 90%;
+  vertical-align: super;
+  position: relative;
+  top: 0.3em;
+  color: #f1c232;
+}
+
+.fa-year {
+  font-style: italic;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+
+.circ {
+  color: #f79646;
+  margin-left: 4px;
+}
+
+.problem-name-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline;
+}
+  
+.problem-name-link strong {
+  position: relative;
+  display: inline-block;
+}
+
+.problem-name-link:hover strong::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 4px; /* Adjust distance below text */
+  width: calc(100% - 0.001em); /* Reduce width to exclude the last character(s) */
+  height: 1px; /* Thickness of underline */
+  background-color: #f9f9f9;
+}
+
+
+
+
+
+/* --- Problem page --- */
+
+#problem-name {
+  font-size: 28px; /* or larger, e.g. 32px */
+  font-weight: 500; /* optional: boldness */
+  margin-bottom: 10px; /* optional: spacing below */
+}
+
+.problem-meta-inline {
+  margin-left: 10px;
+  font-size: 0.9em;
+  display: inline-flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.grade-inline {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 900; /* Roboto Black */
+}
+
+.rating-inline {
+  font-size: 90%;
+  vertical-align: super;
+  position: relative;
+  top: -0.1em;
+  color: #f1c232;;
+}
+
+.expo-inline {
+  font-family: 'Arial Black', Gadget, sans-serif;
+  color: #cc0000;
+}
+
+.fa-name {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300; /* Light */
+  font-size: 16px;
+  color: #aaa;
+  margin-top: -15px;
+  margin-bottom: 30px;
+}
+
+.fa-name-link {
+  font-weight: 300;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fa-name-link:hover {
+  text-decoration: underline;
+}
+
+.problem-description {
+  margin-bottom: 30px;
+}
+
+
+.problem-additional {
+  display: none;
+  font-size: 14px;
+  color: #aaa;
+
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  padding: 16px 16px 10px;
+}
+
+
+.problem-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.problem-text {
+  flex: 1;
+}
+
+.problem-images-container {
+  flex: 1;
+  max-width: 500px;
+}
+
+
+#problem-images {
+  display: grid;
+  grid-template-columns: repeat(2, 250px);
+  gap: 16px; /* Same space between rows and columns */
+  justify-content: start;
+}
+
+#problem-images img {
+  width: 250px;               /* fixed width */
+  height: 250px;               /* fixed height */
+  object-fit: cover;          /* crops to fill box */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  flex: 0 0 auto;             /* no stretch/shrink */
+}
+
+#problem-images img:hover {
+  transform: scale(1.03);
+  z-index: 2;
+}
+
+@media (max-width: 650px) {
+  #problem-images {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+
+
+/* --- PERSON page --- */
+
+
+#first-ascents h2 {
+  margin-bottom: 4px;
+}
+
+#first-ascents ul {
+  list-style: none;
+  padding-left: 0;
+  margin-left: -25px;
+  margin-bottom: 30px;
+  margin-top: 0;
+}
+
+#first-ascents li {
+  margin-bottom: 6px;
+}
+
+.person-layout {
+  display: flex;
+  gap: 40px; /* Increased from 0px to create more space between columns */
+  align-items: flex-start; /* Changed from 'left' which isn't a valid value for align-items */
+  justify-content: space-between;
+}
+
+.person-left {
+  flex: 0.8; /* Give more weight to the left side */
+}
+
+.person-right {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  color: #ccc;
+  padding-top: 30px; /* Add some top padding to align with content */
+}
+
+.ascent-count {
+  display: none;
+  align-self: flex-start;
+  text-align: left;
+  margin-top: 0;
+  font-size: 14px;
+  color: #aaa;
+
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  padding: 16px 16px 10px;
+}
+
+.climber-images {
+  margin-top: 30px;
+  display: none; /* default hidden until JS enables it */
+}
+
+.climber-images-title {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-family: 'Libre Baskerville', serif;
+}
+
+.climber-image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 250px);
+  gap: 16px;
+  justify-content: start;
+}
+
+.climber-image-grid img {
+  width: 250px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.climber-image-grid img:hover {
+  transform: scale(1.03);
+  z-index: 2;
+}
+
+@media (max-width: 650px) {
+  .climber-image-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+#lightbox {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#lightbox-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 8px;
+}
+
+#lightbox-caption {
+  color: #f9f9f9;
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  max-width: 90vw;
+}
+
+#lightbox-title a {
+  color: #f9f9f9;
+  text-decoration: none;
+  margin-bottom: 40px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#lightbox-title a:hover {
+  text-decoration: underline;
+}
+
+.lightbox-nav {
+  visibility: hidden;
+  position: absolute;
+}
+
+
+
+
+header, footer {
+  text-align: center;
+  margin: 5px 30px 40px 0;
+}
+
+.site-branding {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* space between logo and title */
+}
+
+.logo {
+  height: 40px; /* or whatever size fits well */
+  width: auto;
+  display: block;
+  margin-top: -20px;
+}
+
+.site-header {
+  text-align: left;
+  margin-bottom: 40px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+h1, h2 {
+  margin-top: 0;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 24px;
+}
+
+
+a {
+  color: #f9f9f9;
+  text-decoration: underline;
+}
+
+.image-caption {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  font-weight: 100;
+  color: #ccc;
+  text-align: center;
+  margin-top: 8px;
+}
+
+
+nav {
+  margin: 0;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: #f9f9f9;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+.nav-links a.active {
+  background-color: #434343;
+  color: #d9d9d9;
+  padding: 5px 10px;
+  border-radius: 4px;        /* optional: rounded corners */
+}
+
+.header-tagline {
+  margin-top: 10px;
+  text-align: center; /* or left, if you want it aligned with h1 */
+}
+
+

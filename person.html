@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>First Ascentionist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="lightbox.css"/>
+</head>
+<body class="problem-page">
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html" class="active">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="accomodation.html">Accomodation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="person-layout">
+    <div class="person-left">
+      <h1 id="person-name">Loading...</h1>
+      <section id="first-ascents"></section>
+    </div>
+    <div class="person-right">
+      <div class="ascent-count">
+        <p id="active-period"></p>
+        <p id="ascent-count"></p>
+      </div>
+      <div id="climber-images" class="climber-images">
+        <h2 class="climber-images-title">Photos of <span id="climber-name-label"></span></h2>
+        <div id="climber-image-grid" class="climber-image-grid"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 KjugeBloc</p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lightbox">
+    <!-- Navigation arrows div with visibility:hidden -->
+    <div class="lightbox-nav">
+      <button id="prev-btn">&lsaquo;</button>
+      <button id="next-btn">&rsaquo;</button>
+    </div>
+    <div id="lightbox-title"></div>
+    <img id="lightbox-img" src="" alt="Full image" />
+    <p id="lightbox-caption"></p>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const faName = urlParams.get('name');
+
+    const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
+
+    document.getElementById('person-name').textContent = faName || 'Unknown Climber';
+    document.getElementById('climber-name-label').textContent = faName || 'this climber';
+
+    let climberImages = [];
+    let currentImageIndex = 0;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        const problemsByGrade = {};
+        const section = document.getElementById('first-ascents');
+        const countEl = document.getElementById('ascent-count');
+        let totalAscents = 0;
+        const years = [];
+
+        rows.forEach(row => {
+          const cols = row.c;
+          const problemFA = cols[15]?.v;
+          const name = cols[8]?.v;
+          const grade = cols[9]?.v;
+
+          const imageFiles = cols[18]?.v?.split(',').map(s => s.trim()) || [];
+          const captions = cols[19]?.v?.split(';').map(s => s.trim()) || [];
+
+          // Build first ascents list
+          if (problemFA === faName && name && grade) {
+            problemsByGrade[grade] ??= [];
+            problemsByGrade[grade].push({
+              name,
+              expo: cols[11]?.v || '',
+              rating: cols[12]?.v || '',
+              imageFiles: imageFiles.join(', ')
+            });
+
+            const year = parseInt(cols[16]?.v);
+            if (!isNaN(year)) years.push(year);
+          }
+
+          // Match images with captions: must include Climber: [faName]
+          imageFiles.forEach((img, i) => {
+            const caption = captions[i] || '';
+            const climberPattern = new RegExp(`Climber:\\s*${faName}\\b`);
+            if (img && climberPattern.test(caption)) {
+              climberImages.push({ file: img, caption, problemName: name || '' });
+            }
+          });
+        });
+
+        // Sort and render first ascents
+        const gradeOrder = ['P', '8C', '8B+', '8B', '8A+', '8A', '7C+', '7C', '7B+', '7B', '7A+', '7A', '6C+', '6C', '6B+', '6B', '6A+', '6A', '5+', '5', 'L', '–'];
+        const sortedGrades = Object.keys(problemsByGrade).sort((a, b) => {
+          const indexA = gradeOrder.indexOf(a);
+          const indexB = gradeOrder.indexOf(b);
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
+
+        section.innerHTML = '';
+
+        if (sortedGrades.length === 0) {
+          section.innerHTML = '<p>No first ascents found for this climber.</p>';
+          countEl.textContent = 'Total First Ascents: 0';
+        } else {
+          sortedGrades.forEach(grade => {
+            const gradeHeader = document.createElement('h2');
+            gradeHeader.textContent = grade;
+            section.appendChild(gradeHeader);
+
+            const list = document.createElement('ul');
+            problemsByGrade[grade]
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .forEach(problem => {
+                totalAscents++;
+                const li = document.createElement('li');
+                const cameraIcon = problem.imageFiles.trim() !== '' ? '📷 ' : '';
+
+                li.innerHTML = `
+                  <div class="problem-row">
+                    <span class="camera-icon">${cameraIcon}</span>
+                    <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link">
+                      <strong>${problem.name}</strong>
+                    </a>
+                    <span class="problem-meta">
+                      <span class="expo">${problem.expo}</span>
+                      <span class="rating">${problem.rating}</span>
+                    </span>
+                  </div>
+                `;
+                list.appendChild(li);
+              });
+
+            section.appendChild(list);
+          });
+
+          countEl.textContent = `Total First Ascents: ${totalAscents}`;
+          document.querySelector('.ascent-count').style.display = 'block';
+
+          if (years.length > 0) {
+            years.sort((a, b) => a - b);
+            document.getElementById('active-period').textContent = `Active period: ${years[0]} - ${years[years.length - 1]}`;
+          } else {
+            document.getElementById('active-period').textContent = 'Active period: –';
+          }
+        }
+
+        // Render climber images
+        const imageGrid = document.getElementById('climber-image-grid');
+        if (climberImages.length > 0) {
+          document.getElementById('climber-images').style.display = 'block';
+
+          climberImages.forEach((item, index) => {
+            const img = document.createElement('img');
+            img.src = `images/problem-photos/${item.file}`;
+            img.alt = item.caption;
+            img.loading = 'lazy';
+            img.onerror = () => img.remove();
+            img.addEventListener('click', () => showImage(index));
+            imageGrid.appendChild(img);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('first-ascents').innerHTML = '<p style="color: red;">Failed to load problems.</p>';
+        document.getElementById('ascent-count').textContent = 'Total First Ascents: 0';
+      });
+
+    // Lightbox logic
+    function showImage(index) {
+      if (!climberImages[index]) return;
+      
+      currentImageIndex = index;
+      
+      const image = climberImages[index];
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      const lightboxCaption = document.getElementById('lightbox-caption');
+      const lightboxTitle = document.getElementById('lightbox-title');
+      
+      lightboxImg.src = `images/problem-photos/${image.file}`;
+      lightboxCaption.textContent = image.caption;
+      lightboxTitle.innerHTML = `
+        <a href="problem.html?name=${encodeURIComponent(image.problemName)}">
+          ${image.problemName}
+        </a>
+      `;
+      
+      lightbox.style.display = 'flex';
+    }
+    
+    // Keep the navigateImage function for keyboard navigation
+    function navigateImage(direction) {
+      const nextIndex = direction === 'next' 
+        ? (currentImageIndex + 1) % climberImages.length 
+        : (currentImageIndex - 1 + climberImages.length) % climberImages.length;
+      showImage(nextIndex);
+    }
+
+    // Event listeners for lightbox
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      // Close lightbox when clicking outside the image
+      if (e.target === this || e.target === document.getElementById('lightbox-img')) {
+        this.style.display = 'none';
+      }
+    });
+    
+    // Keep event listeners for prev-btn and next-btn (they're hidden but functional)
+    document.getElementById('prev-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      navigateImage('prev');
+    });
+    
+    document.getElementById('next-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      navigateImage('next');
+    });
+
+    // Keyboard navigation - restored left/right arrow functionality
+    document.addEventListener('keydown', function(e) {
+      const lightbox = document.getElementById('lightbox');
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'ArrowRight') {
+          navigateImage('next');
+          e.preventDefault(); // Prevent scrolling
+        } else if (e.key === 'ArrowLeft') {
+          navigateImage('prev');
+          e.preventDefault(); // Prevent scrolling
+        } else if (e.key === 'Escape') {
+          lightbox.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
