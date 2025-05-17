@@ -2,6 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+const PORT = process.env.PORT || 8000;
+
 http.createServer((req, res) => {
   let filePath = '.' + (req.url === '/' ? '/index.html' : req.url);
   const ext = path.extname(filePath);
@@ -17,7 +19,6 @@ http.createServer((req, res) => {
     case '.svg': contentType = 'image/svg+xml'; break;
   }
 
-  // Stream file if exists
   fs.readFile(filePath, (err, content) => {
     if (err) {
       res.writeHead(404);
@@ -27,6 +28,6 @@ http.createServer((req, res) => {
       res.end(content);
     }
   });
-}).listen(8000);
-
-console.log('Server running at http://localhost:8000');
+}).listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
