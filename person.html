@@ -84,6 +84,14 @@
         const section = document.getElementById('first-ascents');
         const countEl = document.getElementById('ascent-count');
         let totalAscents = 0;
+        function toDirectImgurURL(url) {
+          const match = url.match(/imgur\.com\/([a-zA-Z0-9]+)(\.\w+)?/);
+          if (match) {
+            const ext = match[2] || '.jpg';
+            return `https://i.imgur.com/${match[1]}${ext}`;
+          }
+          return url;
+        }
         const years = [];
 
         rows.forEach(row => {
@@ -92,7 +100,10 @@
           const name = cols[8]?.v;
           const grade = cols[9]?.v;
 
-          const imageFiles = cols[18]?.v?.split(',').map(s => s.trim()) || [];
+          const imageFiles = (cols[18]?.v || '')
+            .split(/[,;]/)
+            .map(s => toDirectImgurURL(s.trim()))
+            .filter(Boolean);
           const captions = cols[19]?.v?.split(';').map(s => s.trim()) || [];
 
           // Build first ascents list
@@ -182,7 +193,7 @@
 
           climberImages.forEach((item, index) => {
             const img = document.createElement('img');
-            img.src = `images/problem-photos/${item.file}`;
+            img.src = item.file;
             img.alt = item.caption;
             img.loading = 'lazy';
             img.onerror = () => img.remove();
@@ -209,7 +220,7 @@
       const lightboxCaption = document.getElementById('lightbox-caption');
       const lightboxTitle = document.getElementById('lightbox-title');
       
-      lightboxImg.src = `images/problem-photos/${image.file}`;
+      lightboxImg.src = image.file;
       lightboxCaption.textContent = image.caption;
       lightboxTitle.innerHTML = `
         <a href="problem.html?name=${encodeURIComponent(image.problemName)}">
