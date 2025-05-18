@@ -73,6 +73,7 @@
               circ: cols[7]?.v || '',
               starScore: rating === '★' ? 2 : rating === '☆' ? 1 : 0,
               imageFiles: cols[18]?.v || ''
+              video: cols[17]?.v || ''
             });
           }
         });
@@ -112,7 +113,8 @@
               const li = document.createElement('li');
 
               const hasImages = problem.imageFiles.trim() !== '';
-              const cameraIcon = hasImages ? '📷' : '';
+              const hasVideo = problem.video?.trim() !== '';
+              const cameraIcon = (hasImages || hasVideo) ? '📷' : '';
               const isPGrade = grade === 'P';
               const nameStyle = isPGrade ? 'style="color: #999999;"' : '';
 
