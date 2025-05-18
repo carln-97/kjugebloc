@@ -55,12 +55,21 @@
     let captionList = [];
     let currentImageIndex = 0;
 
+    function toDirectImgurURL(url) {
+      const match = url.match(/imgur\.com\/([a-zA-Z0-9]+)(\.\w+)?/);
+      if (match) {
+        const ext = match[2] || '.jpg'; // default to .jpg if no extension
+        return `https://i.imgur.com/${match[1]}${ext}`;
+      }
+      return url;
+    }
+
     function showImage(index) {
       const lightboxImg = document.getElementById('lightbox-img');
       const caption = document.getElementById('lightbox-caption');
 
       if (imageList[index]) {
-        lightboxImg.src = `images/problem-photos/${imageList[index]}`;
+        lightboxImg.src = toDirectImgurURL(imageList[index]);
         caption.textContent = captionList[index] || '';
         document.getElementById('lightbox').style.display = 'flex';
         currentImageIndex = index;
@@ -110,7 +119,7 @@
           }
         }
 
-        const additionalInfo = problem[23]?.v || ''; // Column 23
+        const additionalInfo = problem[23]?.v || '';
         const additionalEl = document.getElementById('problem-additional');
 
         if (additionalInfo) {
@@ -119,12 +128,10 @@
             .map(part => {
               let cleaned = part.trim();
 
-              // Handle "italic" first
               cleaned = cleaned.replace(/"(.*?)"/g, (_, match) =>
                 `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 14px;">${match}</span>`
               );
 
-              // Then handle [bold] without touching already inserted spans
               cleaned = cleaned.replace(/\[(.*?)\]/g, (_, match) =>
                 `<span style="font-weight: bold;">${match}</span>`
               );
@@ -144,7 +151,7 @@
           additionalEl.style.display = 'none';
         }
 
-        imageList = (problem[18]?.v || '').split(',').map(s => s.trim());
+        imageList = (problem[18]?.v || '').split(';').flatMap(part => part.split(',')).map(s => s.trim()).filter(Boolean);
         captionList = (problem[19]?.v || '').split(';').map(s => s.trim());
         const imageContainer = document.getElementById('problem-images');
         const videoLinks = (problem[17]?.v || '').split(';').map(link => link.trim()).filter(Boolean);
@@ -164,10 +171,10 @@
           });
         }
 
-        imageList.forEach((filename, index) => {
-          if (filename) {
+        imageList.forEach((url, index) => {
+          if (url) {
             const img = document.createElement('img');
-            img.src = `images/problem-photos/${filename}`;
+            img.src = toDirectImgurURL(url);
             img.alt = problemName;
             img.style.cursor = 'pointer';
             img.onerror = () => img.remove();
@@ -201,7 +208,7 @@
         }
       });
     });
-    
+
     function transformToEmbedURL(url) {
       if (url.includes('youtube.com/watch?v=')) {
         return url.replace('watch?v=', 'embed/');
@@ -213,7 +220,7 @@
         const id = url.split('/').pop();
         return `https://player.vimeo.com/video/${id}`;
       }
-      return url; // fallback (maybe already embeddable)
+      return url;
     }
   </script>
 
