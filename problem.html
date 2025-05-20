@@ -11,7 +11,9 @@
   <header class="site-header">
     <div class="header-content">
       <div class="site-branding">
-        <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        <a href="index.html">
+          <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        </a>
         <h1>KjugeBloc</h1>
       </div>
       <nav>
@@ -29,6 +31,9 @@
 
   <main class="problem-layout">
     <div class="problem-text">
+      <p class="area-name-label hidden" id="area-name-wrapper">
+        <span class="area-prefix">» </span><a id="area-name-label" class="area-link" href="#"></a>
+      </p>
       <h1 id="problem-name">Loading...</h1>
       <p id="fa-name" class="fa-name"></p>
       <p id="problem-description" class="problem-description"></p>
@@ -90,7 +95,14 @@
         const rating = problem[12]?.v || '';
         const expo = problem[11]?.v || '';
         const description = problem[14]?.v || '';
-
+        const area = problem[2]?.v || '';
+        const areaNameEl = document.getElementById('area-name-label');
+        const wrapper = document.getElementById('area-name-wrapper');
+        if (area && areaNameEl) {
+          areaNameEl.textContent = area;
+          areaNameEl.href = `area.html?area=${encodeURIComponent(area)}`;
+          wrapper.classList.remove('hidden');
+        }
         document.getElementById('problem-name').innerHTML = `
           ${name} 
           <span class="problem-meta-inline">
