@@ -87,10 +87,24 @@ main {
   text-align: left;
 }
 
+.area-index h2 {
+  color: #555555;
+  font-size: 38px;
+  font-weight: 700;
+  margin-top: 0px;
+  margin-bottom: -2px;
+}
+
+.area-index .location-column section h2 {
+  margin-top: 20px;
+}
+
 .area-index ul {
   list-style: none;
   padding-left: 0;
   margin: 0;
+  margin-top: 0;
+  margin-bottom: 10;
 }
 
 .area-index ul li {
@@ -99,7 +113,9 @@ main {
 
 .area-index ul li a {
   text-decoration: none;
-  color: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  
 }
 
 .area-index ul li a:hover {
@@ -204,6 +220,31 @@ main {
 
 /* --- Problem page --- */
 
+.area-name-label {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.area-prefix {
+  color: #aaa;
+}
+
+.area-link {
+  color: #aaa;
+  text-decoration: none;
+}
+
+.area-link:hover {
+  text-decoration: underline;
+}
+
 #problem-name {
   font-size: 28px; /* or larger, e.g. 32px */
   font-weight: 500; /* optional: boldness */
@@ -278,6 +319,7 @@ main {
 }
 
 .problem-text {
+  margin-top: -40px;
   flex: 1;
 }
 
@@ -541,5 +583,3 @@ nav {
   margin-top: 10px;
   text-align: center; /* or left, if you want it aligned with h1 */
 }
-
-
