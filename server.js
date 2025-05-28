@@ -5,7 +5,7 @@ const path = require('path');
 const PORT = process.env.PORT || 8000;
 
 http.createServer((req, res) => {
-  // Strip off query parameters and hash fragments
+  // Strip query parameters and hash fragments
   const cleanPath = req.url.split('?')[0].split('#')[0];
   const filePath = '.' + (cleanPath === '/' ? '/index.html' : cleanPath);
   const ext = path.extname(filePath).toLowerCase();
@@ -15,6 +15,7 @@ http.createServer((req, res) => {
     case '.js': contentType = 'text/javascript'; break;
     case '.css': contentType = 'text/css'; break;
     case '.json': contentType = 'application/json'; break;
+    case '.csv': contentType = 'text/csv'; break;
     case '.png': contentType = 'image/png'; break;
     case '.jpg':
     case '.jpeg': contentType = 'image/jpeg'; break;
