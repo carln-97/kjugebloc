@@ -2,9 +2,13 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+const PORT = process.env.PORT || 8000;
+
 http.createServer((req, res) => {
-  let filePath = '.' + (req.url === '/' ? '/index.html' : req.url);
-  const ext = path.extname(filePath);
+  // Strip query parameters and hash fragments
+  const cleanPath = req.url.split('?')[0].split('#')[0];
+  const filePath = '.' + (cleanPath === '/' ? '/index.html' : cleanPath);
+  const ext = path.extname(filePath).toLowerCase();
 
   let contentType = 'text/html';
   switch (ext) {
@@ -16,18 +20,20 @@ http.createServer((req, res) => {
     case '.jpg':
     case '.jpeg': contentType = 'image/jpeg'; break;
     case '.svg': contentType = 'image/svg+xml'; break;
+    default: contentType = 'text/html'; break;
   }
 
-  // Stream file if exists
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      res.writeHead(404);
+      console.error(`404 Not Found: ${filePath}`);
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not Found');
     } else {
+      console.log(`200 OK: ${filePath}`);
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);
     }
   });
-}).listen(8000);
-
-console.log('Server running at http://localhost:8000');
+}).listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
