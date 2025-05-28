@@ -1,0 +1,7 @@
+{Problems}
+((Name))
+A problem usually gets its name from the first ascentionist, though sometimes community names emerge. Names often have some connection to other names on a boulder/sector — a custom one ought to pay hommage to if establishing a new line.
+((Grades))
+The difficulty grading scale follows the French system with some local variations in the lower range. L stands for 'Lätt' Swedish for 'Easy', then follows 5 and 5+ after which the normal scale continues with 6A, 6A+, 6B ... 6C+, 7A, 7A+ and so on. P represents a project — an unclimbed line.
+Climbs are graded after the easiest discovered method in good conditions. For Kjugekull in particular many methods have been refined over the years. Meaning if you're not used to figuring out good beta or if its warm/humid, even "easier" climbs may feel very difficult. This has garnered Kjugekull a reputation of being 'sandbagged' ie having hard grades, though once you get used to the specific style and lower expectations during bad conditions — it all starts making sense.
+Grades do generally not take into account exposure. Therefore if a climb has an exclamation mark (see below), it's a good idea to feel comfortable in the given difficulty range, or have a strong mental game.

@@ -1,0 +1,27 @@
+((Styles))
+The main aspects which characterize a climb such as it's steepness, hold-type, and general form.
+• arete – an outwards-facing corner
+• bulge – a round bulge-formation
+• crack – a crack-formation, possibly requiring jamming techniques
+• dihedral – an inwards-facing corner
+• dyno – a dynamic jump
+• mantle – a tricky movement over a lip, often att the top of a climb
+• overhang – the general angle is around 45°
+• pillar – a protruding vertical formation
+• prow – a protruding overhanging formation
+• roof – the general angle is steeper than 45°
+• slab – the general angle is less than vertical 
+• slightly overhanging – the general angle is more than vertical 
+• traverse – a climb which goes more sideways than up
+• wall – the general angle is more or less vertical 
+
+• crimps – small edges
+• compression – squeezing climbing style
+• pockets – pockets for one, two or more fingers
+• pinches – protruding grips, pinched with thumb
+• slopers – rounded holds
+• underclings – inverted holds, grabbed from below
+
+• morpho – easier if you're tall and considerably harder/impossible if you're short
+• lowball – a low boulderproblem with a nice flat landing
+• seeping – climbs which take a long time to dry, and so are often wet or damp
