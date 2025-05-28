@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KjugeBloc Map</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
+  <style>
+    #custom-map {
+      width: 100%;
+      height: 80vh;
+      border-radius: 8px;
+    }
+
+    .map-label {
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body.map-page .site-branding h1 {
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body class="map-page">
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <a href="index.html">
+          <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        </a>
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html">Area Index</a></li>
+          <li><a href="map.html" class="active">Map</a></li>
+          <li><a href="accomodation.html">Accomodation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div id="custom-map"></div>
+  </main>
+
+  <footer>
+    <p>© 2025 KjugeBloc</p>
+  </footer>
+
+<script>
+  async function initMap() {
+    class Popup extends google.maps.OverlayView {
+      constructor(position, content) {
+        super();
+        this.position = position;
+
+        content.classList.add('map-label');
+
+        const bubbleAnchor = document.createElement('div');
+        bubbleAnchor.classList.add('popup-bubble-anchor');
+        bubbleAnchor.appendChild(content);
+
+        this.containerDiv = document.createElement('div');
+        this.containerDiv.classList.add('popup-container');
+        this.containerDiv.appendChild(bubbleAnchor);
+      }
+
+      onAdd() {
+        this.getPanes().floatPane.appendChild(this.containerDiv);
+      }
+
+      onRemove() {
+        if (this.containerDiv.parentElement) {
+          this.containerDiv.parentElement.removeChild(this.containerDiv);
+        }
+      }
+
+      draw() {
+        const projection = this.getProjection();
+        const position = projection.fromLatLngToDivPixel(this.position);
+        this.containerDiv.style.left = position.x + 'px';
+        this.containerDiv.style.top = position.y + 'px';
+      }
+    }
+
+    const map = new google.maps.Map(document.getElementById("custom-map"), {
+      center: { lat: 56.135273, lng: 14.342677 },
+      zoom: 11,
+      mapId: "ef8ef817ac7afc371ca808be",
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        position: google.maps.ControlPosition.TOP_LEFT,
+        mapTypeIds: ['roadmap', 'satellite']
+      }
+    });
+
+    map.addListener("click", () => {
+      if (openPopup) {
+        openPopup.setMap(null);
+        openPopup = null;
+      }
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const zoomToArea = params.get("area");
+
+    let openPopup = null;
+    const bounds = new google.maps.LatLngBounds();
+
+    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+
+    const sectorCSV = await fetch('map/sectors.csv').then(res => res.text());
+    const sectorRows = sectorCSV.trim().split('\n').slice(1);
+
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU/gviz/tq?tqx=out:json&sheet=databas';
+    const sheetRaw = await fetch(sheetUrl).then(res => res.text());
+    const sheetJson = JSON.parse(sheetRaw.substring(47).slice(0, -2));
+
+    const sectorToAreaMap = {};
+    sheetJson.table.rows.forEach(row => {
+      const cols = row.c;
+      const area = cols[2]?.v?.trim();
+      const sector = cols[3]?.v?.trim();
+      if (area && sector) {
+        sectorToAreaMap[sector] = area;
+      }
+    });
+
+    sectorRows.forEach(row => {
+      const [fullName, lat, lng, imp] = row.split(',').map(v => v.trim());
+      if (!fullName || !lat || !lng) return;
+
+      const isParking = fullName.startsWith("Parking");
+      const displayName = isParking ? fullName : (fullName.split(" – ")[1] || fullName);
+      const sectorKey = isParking ? fullName : displayName;
+      const linkedArea = sectorToAreaMap[sectorKey] || (isParking ? 'Parking' : null);
+      if (!linkedArea) return;
+
+      const region = sheetJson.table.rows.find(r => r.c[3]?.v?.trim() === sectorKey)?.c[1]?.v?.trim();
+      let backgroundColor = '#f1c232';
+      if (region === 'EAST') backgroundColor = '#38761d';
+      else if (region === 'WEST') backgroundColor = '#a61c00';
+      else if (region === 'NORTH') backgroundColor = '#0b5394';
+      else if (region === 'KJUGEKULL') backgroundColor = '#351c75';
+      else if (region === 'OTHER') backgroundColor = '#dda90b';
+
+      let pin;
+      if (isParking) {
+        const parkingIcon = document.createElement('div');
+        Object.assign(parkingIcon.style, {
+          width: '24px', height: '24px', borderRadius: '50%',
+          backgroundColor: '#666', color: 'white', fontWeight: 'bold',
+          display: 'flex', justifyContent: 'center', alignItems: 'center'
+        });
+        parkingIcon.textContent = 'P';
+        pin = { element: parkingIcon };
+      } else {
+        pin = new PinElement({
+          scale: imp === '1' || imp === 'true' ? 1.4 : 1.0,
+          background: backgroundColor,
+          borderColor: '#444444',
+          glyph: '',
+          glyphColor: 'white'
+        });
+
+        const icon = document.createElement('img');
+        icon.src = 'images/logo/map-pin-icon.png';
+        Object.assign(icon.style, {
+          width: '16px', height: '16px', position: 'absolute',
+          top: '35%', left: '50%', transform: 'translate(-50%, -50%)'
+        });
+        pin.element.appendChild(icon);
+      }
+
+      const position = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
+      const marker = new AdvancedMarkerElement({
+        map,
+        position,
+        title: displayName,
+        content: pin.element,
+        zIndex: (imp === '1' || imp === 'true') ? 100 : 1
+      });
+
+      if (zoomToArea && linkedArea === zoomToArea) {
+        bounds.extend(position);
+      }
+
+      marker.addListener("click", () => {
+        if (openPopup) openPopup.setMap(null);
+        const popupContent = document.createElement('div');
+        popupContent.innerHTML = `
+          <div>
+            <a href="${isParking ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : `sector.html?sector=${encodeURIComponent(displayName)}`}"
+               ${isParking ? 'target="_blank" rel="noopener noreferrer"' : ''}>
+              ${displayName}
+            </a>
+          </div>
+        `;
+        const popup = new Popup(marker.position, popupContent);
+        popup.setMap(map);
+        openPopup = popup;
+      });
+    });
+
+    if (zoomToArea && !bounds.isEmpty()) {
+      map.fitBounds(bounds);
+
+      // Cap zoom level to max 16 after bounds are set
+      google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+        if (map.getZoom() > 16) {
+          map.setZoom(16);
+        }
+      });
+    }
+  }
+</script>
+
+
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAn4Ve5sHh3BeMB4-vHWCZFVr3TJG3_OwY&callback=initMap&libraries=marker">
+</script>
+
+
+</body>
+</html>
