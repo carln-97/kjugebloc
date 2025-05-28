@@ -82,8 +82,17 @@
     }
   }
 
+  function sanitizeName(name) {
+    return name
+      .replace(/\s+/g, '_')
+      .replace(/Å|Ä/g, 'A')
+      .replace(/Ö/g, 'O')
+      .replace(/å|ä/g, 'a')
+      .replace(/ö/g, 'o');
+  }
+
   const areaImg = document.getElementById('area-image');
-  const imagePath = `images/area-image/${areaName.replace(/\s+/g, '_')}_1.jpg`;
+  const imagePath = `images/area-image/${sanitizeName(areaName)}_1.jpg`;
   areaImg.src = imagePath;
 
   areaImg.onload = () => {
@@ -101,7 +110,7 @@
     areaImg.onload = null;
   };
 
-  const areaTextPath = `text/area-text/${areaName.replace(/\s+/g, '_')}.txt`;
+  const areaTextPath = `text/area-text/${sanitizeName(areaName)}.txt`;
   fetch(areaTextPath)
     .then(res => res.ok ? res.text() : '')
     .then(text => {
