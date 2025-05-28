@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="lightbox.css"/>
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
 </head>
 <body class="problem-page">
   <header class="site-header">
@@ -41,7 +42,6 @@
         <p id="ascent-count"></p>
       </div>
       <div id="climber-images" class="climber-images">
-        <h2 class="climber-images-title">Photos of <span id="climber-name-label"></span></h2>
         <div id="climber-image-grid" class="climber-image-grid"></div>
       </div>
     </div>
@@ -71,7 +71,6 @@
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
 
     document.getElementById('person-name').textContent = faName || 'Unknown Climber';
-    document.getElementById('climber-name-label').textContent = faName || 'this climber';
 
     let climberImages = [];
     let currentImageIndex = 0;
@@ -115,7 +114,8 @@
               name,
               expo: cols[11]?.v || '',
               rating: cols[12]?.v || '',
-              imageFiles: imageFiles.join(', ')
+              imageFiles: imageFiles.join(', '),
+              videoLink: cols[17]?.v || ''
             });
 
             const year = parseInt(cols[16]?.v);
@@ -157,7 +157,10 @@
               .forEach(problem => {
                 totalAscents++;
                 const li = document.createElement('li');
-                const cameraIcon = problem.imageFiles.trim() !== '' ? '📷 ' : '';
+                const hasImages = problem.imageFiles.trim() !== '';
+                const hasVideo = (problem.videoLink || '').trim() !== '';
+                const cameraIcon = (hasImages || hasVideo) ? '📷 ' : '';
+
 
                 li.innerHTML = `
                   <div class="problem-row">
@@ -177,14 +180,16 @@
             section.appendChild(list);
           });
 
-          countEl.textContent = `Total First Ascents: ${totalAscents}`;
+          countEl.innerHTML = `<strong>Total First Ascents:</strong> <span class="highlight-white">${totalAscents}</span>`;
           document.querySelector('.ascent-count').style.display = 'block';
 
           if (years.length > 0) {
             years.sort((a, b) => a - b);
-            document.getElementById('active-period').textContent = `Active period: ${years[0]} - ${years[years.length - 1]}`;
+            document.getElementById('active-period').innerHTML =
+              `<strong>Active period:</strong> <span class="highlight-white">${years[0]} - ${years[years.length - 1]}</span>`;
           } else {
-            document.getElementById('active-period').textContent = 'Active period: –';
+            document.getElementById('active-period').innerHTML =
+              '<strong>Active period:</strong> <span class="highlight-white">–</span>';
           }
         }
 
