@@ -6,6 +6,7 @@
   <title>Climbing Area</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
@@ -32,7 +33,7 @@
   </header>
 
   <main>
-    <h1 id="area-title">Loading area...</h1>
+    <h1><span id="area-title">Loading area...</span> <a id="map-zoom-link" href="#" title="View on Map" class="map-symbol hidden" style="font-size: 20px; margin-left: 10px; text-decoration: none;">🧭</a></h1>
     <div class="area-layout">
       <div class="area-content-row">
         <div class="area-text" id="area-text" style="display: none;">Loading description...</div>
@@ -55,302 +56,255 @@
     <p>© 2025 KjugeBloc</p>
   </footer>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const areaName = params.get('area');
-    
-    // Track loading states
-    let loadingStates = {
-      image: false,
-      text: false,
-      problems: false
-    };
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const areaName = params.get('area');
 
-    // Function to check if everything is loaded and show content
-    function checkAndShowContent() {
-      const areaImg = document.getElementById('area-image');
+  let loadingStates = {
+    image: false,
+    text: false,
+    problems: false
+  };
+
+  function checkAndShowContent() {
+    const areaImg = document.getElementById('area-image');
+    const textContainer = document.getElementById('area-text');
+    const row = document.querySelector('.area-content-row');
+
+    if (loadingStates.image && loadingStates.text && loadingStates.problems) {
+      const hasImage = areaImg.complete && areaImg.naturalWidth > 0;
+      const hasText = textContainer.textContent && textContainer.textContent !== 'Loading description...';
+
+      areaImg.style.display = hasImage ? 'block' : 'none';
+      textContainer.style.display = hasText ? 'block' : 'none';
+
+      if (!hasText) row.classList.add('only-chart');
+    }
+  }
+
+  const areaImg = document.getElementById('area-image');
+  const imagePath = `images/area-image/${areaName.replace(/\s+/g, '_')}_1.jpg`;
+  areaImg.src = imagePath;
+
+  areaImg.onload = () => {
+    areaImg.alt = `${areaName} image`;
+    loadingStates.image = true;
+    checkAndShowContent();
+  };
+
+  areaImg.onerror = () => {
+    areaImg.style.display = 'none';
+    areaImg.alt = '';
+    loadingStates.image = true;
+    checkAndShowContent();
+    areaImg.onerror = null;
+    areaImg.onload = null;
+  };
+
+  const areaTextPath = `text/area-text/${areaName.replace(/\s+/g, '_')}.txt`;
+  fetch(areaTextPath)
+    .then(res => res.ok ? res.text() : '')
+    .then(text => {
       const textContainer = document.getElementById('area-text');
-      const row = document.querySelector('.area-content-row');
+      textContainer.innerHTML = text
+        ? text.trim().split(/\n\s*\n/).map(p => `<p>${p.trim()}</p>`).join('')
+        : '';
+      loadingStates.text = true;
+      checkAndShowContent();
+    })
+    .catch(() => {
+      document.getElementById('area-text').textContent = '';
+      loadingStates.text = true;
+      checkAndShowContent();
+    });
 
-      if (loadingStates.image && loadingStates.text && loadingStates.problems) {
-        const hasImage = areaImg.complete && areaImg.naturalWidth > 0;
-        const hasText = textContainer.textContent && textContainer.textContent !== 'Loading description...';
+  const areaTitleEl = document.getElementById('area-title');
+  const mapLink = document.getElementById('map-zoom-link');
+  areaTitleEl.textContent = areaName || 'Unknown Area';
+  mapLink.classList.add('hidden');
 
-        if (hasImage) {
-          areaImg.style.display = 'block';
-        } else {
-          areaImg.style.display = 'none';
-        }
+  const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+  const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
 
-        if (hasText) {
-          textContainer.style.display = 'block';
-        } else {
-          textContainer.style.display = 'none';
-          row.classList.add('only-chart');
-        }
+  Promise.all([
+    fetch(sheetUrl).then(res => res.text()),
+    fetch('map/sectors.csv').then(res => res.text())
+  ])
+  .then(([sheetText, csvText]) => {
+    const sheetJson = JSON.parse(sheetText.substring(47).slice(0, -2));
+    const rows = sheetJson.table.rows;
+
+    const sectorSet = new Set(
+      csvText.trim().split('\n').slice(1)
+        .map(line => {
+          const name = line.split(',')[0].trim();
+          return name.startsWith('Parking') ? name : (name.split(' – ')[1] || name);
+        })
+    );
+
+    const matchingSectors = new Set();
+    const problemsByGrade = {};
+
+    rows.forEach(row => {
+      const cols = row.c;
+      const area = cols[2]?.v?.trim();
+      const sector = cols[3]?.v?.trim();
+      const name = cols[8]?.v;
+      const grade = cols[9]?.v;
+
+      if (area === areaName && sector && sectorSet.has(sector)) {
+        matchingSectors.add(sector);
       }
+
+      if (area === areaName && name && grade) {
+        const rating = cols[12]?.v || '';
+        problemsByGrade[grade] ??= [];
+        problemsByGrade[grade].push({
+          name,
+          expo: cols[11]?.v || '',
+          rating,
+          faYear: cols[20]?.v || '',
+          circ: cols[7]?.v || '',
+          starScore: rating === '★' ? 2 : rating === '☆' ? 1 : 0,
+          imageFiles: cols[18]?.v || '',
+          videoLink: cols[17]?.v || ''
+        });
+      }
+    });
+
+    if (matchingSectors.size > 0) {
+      mapLink.href = `map.html?area=${encodeURIComponent(areaName)}`;
+      mapLink.classList.remove('hidden');
     }
 
-    // Load image
-    const areaImg = document.getElementById('area-image');
-    const imagePath = `images/area-image/${areaName.replace(/\s+/g, '_')}_1.jpg`;
-    areaImg.src = imagePath;
+    const gradeOrder = ['P','8C','8B+','8B','8A+','8A','7C+','7C','7B+','7B','7A+','7A','6C+','6C','6B+','6B','6A+','6A','5+','5','L','–'];
+    const sortedGrades = Object.keys(problemsByGrade).sort((a, b) =>
+      (gradeOrder.indexOf(a) === -1 ? 999 : gradeOrder.indexOf(a)) -
+      (gradeOrder.indexOf(b) === -1 ? 999 : gradeOrder.indexOf(b))
+    );
 
-    areaImg.onload = () => {
-      areaImg.alt = `${areaName} image`;  // Set alt only if loaded
-      loadingStates.image = true;
-      checkAndShowContent();
+    const section = document.getElementById('problems-section');
+    if (sortedGrades.length === 0) {
+      section.innerHTML = '<p>No problems found for this area.</p>';
+    } else {
+      sortedGrades.forEach(grade => {
+        const header = document.createElement('h2');
+        header.textContent = grade;
+        section.appendChild(header);
+
+        const list = document.createElement('ul');
+        problemsByGrade[grade].sort((a, b) =>
+          b.starScore - a.starScore || a.name.localeCompare(b.name)
+        ).forEach(problem => {
+          const li = document.createElement('li');
+          const hasMedia = problem.imageFiles.trim() || problem.videoLink.trim();
+          const cameraIcon = hasMedia ? '📷' : '';
+          const nameStyle = grade === 'P' ? 'style="color: #999999;"' : '';
+
+          li.innerHTML = `
+            <div class="problem-row">
+              <span class="camera-icon">${cameraIcon}</span>
+              <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link">
+                <strong ${nameStyle}>${problem.name}</strong>
+              </a>
+              <span class="problem-meta">
+                <span class="rating">${problem.rating}</span>
+                <span class="expo">${problem.expo}</span>
+                <span class="fa-year">${problem.faYear}</span>
+                ${problem.circ !== '-' ? `<span class="circ">${problem.circ}</span>` : ''}
+              </span>
+            </div>
+          `;
+          list.appendChild(li);
+        });
+
+        section.appendChild(list);
+      });
+    }
+
+    const categories = {
+      'L': ['L'], '5': ['5', '5+'], '6A': ['6A', '6A+'], '6B': ['6B', '6B+'],
+      '6C': ['6C', '6C+'], '7A': ['7A', '7A+'], '7B': ['7B', '7B+'],
+      '7C': ['7C', '7C+'], '8A': ['8A', '8A+'], '8B': ['8B', '8B+'], '8C': ['8C']
+    };
+    const fullLabels = Object.keys(categories);
+    const visibleLabels = [], visibleData = [];
+
+    fullLabels.forEach(label => {
+      const count = categories[label].reduce((sum, g) => sum + (problemsByGrade[g]?.length || 0), 0);
+      if (count > 0) {
+        visibleLabels.push(label);
+        visibleData.push(count);
+      }
+    });
+
+    let total = visibleData.reduce((sum, val) => sum + val, 0);
+    if (problemsByGrade['–']) total += problemsByGrade['–'].length;
+
+    const totalLabelPlugin = {
+      id: 'totalLabel',
+      afterDraw(chart) {
+        const { ctx, chartArea: { top, right } } = chart;
+        ctx.save();
+        ctx.font = '45px Roboto';
+        ctx.fillStyle = '#999999';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${total}`, right - 8, top + 20);
+        ctx.restore();
+      }
     };
 
-    areaImg.onerror = () => {
-      console.log('[image] failed');
-      areaImg.style.display = 'none';
-      areaImg.alt = '';
-      loadingStates.image = true;
-      checkAndShowContent();
+    const baseHue = 42, baseSaturation = 98, startLightness = 62, endLightness = 30;
+    const steps = visibleLabels.length;
+    const backgroundColors = visibleLabels.map((_, i) => {
+      const lightness = startLightness - ((startLightness - endLightness) * (i / (steps - 1)));
+      return `hsl(${baseHue}, ${baseSaturation}%, ${lightness}%)`;
+    });
 
-      // Prevent further triggering
-      areaImg.onerror = null;
-      areaImg.onload = null;
-    };
-
-    const areaTextPath = `text/area-text/${areaName.replace(/\s+/g, '_')}.txt`;
-    fetch(areaTextPath)
-      .then(res => res.ok ? res.text() : '')
-      .then(text => {
-        const textContainer = document.getElementById('area-text');
-        if (text) {
-          textContainer.innerHTML = text
-            .trim()
-            .split(/\n\s*\n/)  // split on blank lines
-            .map(p => `<p>${p.trim()}</p>`)
-            .join('');
-        } else {
-          textContainer.innerHTML = '';
-        }
-        loadingStates.text = true;
-        checkAndShowContent();
-      })
-      .catch(() => {
-        const textContainer = document.getElementById('area-text');
-        textContainer.textContent = '';
-        loadingStates.text = true;
-        checkAndShowContent();
-      });
-
-    document.getElementById('area-title').textContent = areaName || 'Unknown Area';
-
-    const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
-    const sheetName = 'databas';
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-
-    fetch(url)
-      .then(res => res.text())
-      .then(data => {
-        const json = JSON.parse(data.substring(47).slice(0, -2));
-        const rows = json.table.rows;
-
-        const problemsByGrade = {};
-
-        rows.forEach(row => {
-          const cols = row.c;
-          const area = cols[2]?.v;
-          const name = cols[8]?.v;
-          const grade = cols[9]?.v;
-
-          if (area === areaName && name && grade) {
-            const rating = cols[12]?.v || '';
-            problemsByGrade[grade] ??= [];
-            problemsByGrade[grade].push({
-              name: name,
-              expo: cols[11]?.v || '',
-              rating: rating,
-              faYear: cols[20]?.v || '',
-              circ: cols[7]?.v || '',
-              starScore: rating === '★' ? 2 : rating === '☆' ? 1 : 0,
-              imageFiles: cols[18]?.v || '',
-              videoLink: cols[17]?.v || ''
-            });
+    const ctx = document.getElementById('gradeChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: visibleLabels,
+        datasets: [{
+          data: visibleData,
+          backgroundColor: backgroundColors
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        layout: { padding: { top: 20 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+          datalabels: {
+            anchor: 'end',
+            align: 'end',
+            color: '#aaa',
+            font: { weight: 400, size: 12 }
           }
-        });
-
-        const gradeOrder = [
-          'P', '8C', '8B+', '8B', '8A+', '8A',
-          '7C+', '7C', '7B+', '7B', '7A+', '7A',
-          '6C+', '6C', '6B+', '6B', '6A+', '6A',
-          '5+', '5', 'L', '–'
-        ];
-
-        const sortedGrades = Object.keys(problemsByGrade).sort((a, b) => {
-          const indexA = gradeOrder.indexOf(a);
-          const indexB = gradeOrder.indexOf(b);
-          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-        });
-
-        const section = document.getElementById('problems-section');
-
-        if (sortedGrades.length === 0) {
-          section.innerHTML = '<p>No problems found for this area.</p>';
-        } else {
-          sortedGrades.forEach(grade => {
-            const gradeHeader = document.createElement('h2');
-            gradeHeader.textContent = grade;
-            section.appendChild(gradeHeader);
-
-            const list = document.createElement('ul');
-            problemsByGrade[grade]
-              .sort((a, b) => {
-                if (b.starScore !== a.starScore) return b.starScore - a.starScore;
-                return a.name.localeCompare(b.name);
-              })
-              .forEach(problem => {
-                const li = document.createElement('li');
-                const hasImages = problem.imageFiles.trim() !== '';
-                const hasVideo = problem.videoLink.trim() !== '';
-                const cameraIcon = (hasImages || hasVideo) ? '📷' : '';
-                const isPGrade = grade === 'P';
-                const nameStyle = isPGrade ? 'style="color: #999999;"' : '';
-
-                li.innerHTML = `
-                  <div class="problem-row">
-                    <span class="camera-icon">${cameraIcon}</span>
-                    <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link">
-                      <strong ${nameStyle}>${problem.name}</strong>
-                    </a>
-                    <span class="problem-meta">
-                      <span class="rating">${problem.rating}</span>
-                      <span class="expo">${problem.expo}</span>
-                      <span class="fa-year">${problem.faYear}</span>
-                      ${problem.circ !== '-' ? `<span class="circ">${problem.circ}</span>` : ''}
-                    </span>
-                  </div>
-                `;
-                list.appendChild(li);
-              });
-
-            section.appendChild(list);
-          });
-        }
-
-        const categories = {
-          'L': ['L'],
-          '5': ['5', '5+'],
-          '6A': ['6A', '6A+'],
-          '6B': ['6B', '6B+'],
-          '6C': ['6C', '6C+'],
-          '7A': ['7A', '7A+'],
-          '7B': ['7B', '7B+'],
-          '7C': ['7C', '7C+'],
-          '8A': ['8A', '8A+'],
-          '8B': ['8B', '8B+'],
-          '8C': ['8C']
-        };
-
-        const fullLabels = ['L', '5', '6A', '6B', '6C', '7A', '7B', '7C', '8A', '8B', '8C'];
-
-        const visibleLabels = [];
-        const visibleData = [];
-
-        fullLabels.forEach(label => {
-          const count = categories[label].reduce((sum, g) => sum + (problemsByGrade[g]?.length || 0), 0);
-          if (count > 0) {
-            visibleLabels.push(label);
-            visibleData.push(count);
-          }
-        });
-
-        const total = visibleData.reduce((sum, val) => sum + val, 0);
-
-        const totalLabelPlugin = {
-          id: 'totalLabel',
-          afterDraw(chart) {
-            const { ctx, chartArea: { top, right } } = chart;
-            ctx.save();
-            ctx.font = '45px Roboto';
-            ctx.fillStyle = '#999999';
-            ctx.textAlign = 'right';
-            ctx.fillText(`${total}`, right - 8, top + 20);
-            ctx.restore();
-          }
-        };
-
-        const baseHue = 28; // orange-ish (like your original #f79646)
-        const baseSaturation = 90;
-        const startLightness = 65;
-        const endLightness = 30;
-
-        const steps = visibleLabels.length;
-        const backgroundColors = visibleLabels.map((_, i) => {
-          const lightness = startLightness - ((startLightness - endLightness) * (i / (steps - 1)));
-          return `hsl(${baseHue}, ${baseSaturation}%, ${lightness}%)`;
-        });
-
-        const ctx = document.getElementById('gradeChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: visibleLabels,
-            datasets: [{
-              data: visibleData,
-              backgroundColor: backgroundColors
-            }]
+        },
+        scales: {
+          x: {
+            ticks: { color: '#aaa', font: { weight: 500, size: 12 } },
+            grid: { display: false }
           },
-          options: {
-            maintainAspectRatio: false, // Key addition
-            responsive: true,
-            layout: {
-              padding: {
-                top: 20
-              }
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: { enabled: false },
-              datalabels: {
-                anchor: 'end',
-                align: 'end',
-                clamp: true,
-                clip: false, 
-                color: '#aaa',
-                font: {
-                  weight: 400,
-                  size: 12
-                }
-              }
-            },
-            scales: {
-              x: {
-                display: true,
-                ticks: {
-                  color: '#aaa',
-                  font: {
-                    weight: 500,
-                    size: 12
-                  }
-                },
-                grid: {
-                  display: false
-                }
-              },
-              y: {
-                beginAtZero: true,
-                display: false
-              }
-            }
-          },
-          plugins: [ChartDataLabels, totalLabelPlugin]
-        });
+          y: { beginAtZero: true, display: false }
+        }
+      },
+      plugins: [ChartDataLabels, totalLabelPlugin]
+    });
 
-        // Mark problems/chart as loaded
-        loadingStates.problems = true;
-        checkAndShowContent();
-      })
-      .catch(err => {
-        console.error('Error loading data:', err);
-        document.getElementById('problems-section').innerHTML = '<p style="color: red;">Failed to load problems.</p>';
-        loadingStates.problems = true;
-        checkAndShowContent();
-      });
-  </script>
+    loadingStates.problems = true;
+    checkAndShowContent();
+  })
+  .catch(err => {
+    console.error('Error loading data:', err);
+    document.getElementById('problems-section').innerHTML = '<p style="color: red;">Failed to load problems.</p>';
+    loadingStates.problems = true;
+    checkAndShowContent();
+  });
+</script>
 </body>
 </html>
