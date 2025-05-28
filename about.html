@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About – KjugeBloc</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
+</head>
+<body class="about-page">
+
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <a href="index.html">
+          <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        </a>
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html" class="active">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="accomodation.html">Accomodation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="two-column">
+      <div class="left-column">
+        <div id="dynamic-content"></div>
+        <div class="image-wrapper">
+          <img src="images/photos/about-photo_toledo.jpg">
+        </div>
+        <div id="dynamic-content_3"></div>
+        <div class="image-wrapper">
+          <img src="images/photos/about-photo_alla-himmelen.jpg">
+        </div>
+        <div id="dynamic-content_5"></div>
+      </div>
+      <div class="right-column">
+        <div class="image-wrapper">
+          <img src="images/photos/about-photo_imperator.jpg">
+        </div>
+        <div id="dynamic-content_2"></div>
+        <div class="image-wrapper">
+          <img src="images/photos/about-photo_lätt-fjäder.jpg">
+        </div>
+        <div id="dynamic-content_4"></div>
+        <div class="image-wrapper">
+          <img src="images/photos/about-photo_regretto.jpg">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 KjugeBloc</p>
+  </footer>
+
+  <script>
+  function renderFormattedText(filePath, targetId) {
+    fetch(filePath)
+      .then(res => res.ok ? res.text() : Promise.reject('Content not found.'))
+      .then(text => {
+        const container = document.getElementById(targetId);
+        const lines = text.split('\n');
+        let html = '';
+        let inArrowList = false;
+
+        lines.forEach(line => {
+          line = line.trim();
+          if (!line) {
+            html += '<br>';
+            return;
+          }
+
+          line = line.replace(/'''(.*?)'''/g, (_, match) =>
+            `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; color: #aaa;">${match}</span>`
+          );
+
+          // Close arrow list when switching context
+          if (!line.startsWith('»') && inArrowList) {
+            html += '</ul>';
+            inArrowList = false;
+          }
+
+          if (line.match(/^\{(.+)\}$/)) {
+            html += `<h1>${line.match(/^\{(.+)\}$/)[1]}</h1>`;
+          } else if (line.match(/^\(\((.+)\)\)$/)) {
+            html += `<h3>${line.match(/^\(\((.+)\)\)$/)[1]}</h3>`;
+          } else if (line.startsWith('»')) {
+            if (!inArrowList) {
+              html += '<ul class="arrow-list">';
+              inArrowList = true;
+            }
+            html += `<li class="arrow-item">${line.replace(/^»\s*/, '')}</li>`;
+          } else if (line.startsWith('•')) {
+            html += `<div class="tight-bullet">${line}</div>`;
+          } else {
+            html += `<p>${line}</p>`;
+          }
+        });
+
+        if (inArrowList) html += '</ul>';
+
+        container.innerHTML = html;
+      })
+      .catch(() => {
+        const container = document.getElementById(targetId);
+        container.textContent = 'Failed to load content.';
+      });
+  }
+
+  // Call it for both sections
+  document.addEventListener("DOMContentLoaded", () => {
+    renderFormattedText('text/about_intro.txt', 'dynamic-content');
+    renderFormattedText('text/about_ethics.txt', 'dynamic-content_2');
+    renderFormattedText('text/about_problems_1.txt', 'dynamic-content_3');
+    renderFormattedText('text/about_problems_2.txt', 'dynamic-content_4');
+    renderFormattedText('text/about_problems_3.txt', 'dynamic-content_5');
+  });
+  </script>
+
+
+</body>
+</html>
