@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Climbing Sector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
+</head>
+<body class="area-page sector-page">
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <a href="index.html">
+          <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        </a>
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html" class="active">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="accomodation.html">Accomodation</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="sector-text">
+    <p class="area-name-label hidden" id="sector-area-wrapper">
+      <span class="area-prefix">» </span><a id="sector-area-label" class="area-link" href="#"></a>
+    </p>
+    <p class="sector-label hidden" id="sector-label">
+      <span class="sector-prefix">SECTOR</span>
+    </p>
+    <h1 id="area-title" class="hidden">Loading sector...</h1>
+    </div>
+    <div class="area-layout">
+      <div class="problems-and-image-row">
+        <div class="area-left">
+          <section id="problems-section"></section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 KjugeBloc</p>
+  </footer>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const sectorName = params.get('sector');
+    document.getElementById('area-title').textContent = sectorName || 'Unknown Sector';
+
+    const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+        const problemsByGrade = {};
+
+        rows.forEach(row => {
+          const cols = row.c;
+          const sector = cols[3]?.v;
+          const name = cols[8]?.v;
+          const grade = cols[9]?.v;
+
+          if (!document.getElementById('sector-area-wrapper').dataset.set && sector === sectorName) {
+            const area = cols[2]?.v;
+            if (area) {
+              const wrapper = document.getElementById('sector-area-wrapper');
+              const link = document.getElementById('sector-area-label');
+              link.textContent = area;
+              link.href = `area.html?area=${encodeURIComponent(area)}`;
+              wrapper.classList.remove('hidden');
+              wrapper.dataset.set = 'true';
+            }
+          }
+
+          if (sector === sectorName && name && grade) {
+            const rating = cols[12]?.v || '';
+            problemsByGrade[grade] ??= [];
+            problemsByGrade[grade].push({
+              name,
+              expo: cols[11]?.v || '',
+              rating,
+              faYear: cols[20]?.v || '',
+              circ: cols[7]?.v || '',
+              starScore: rating === '★' ? 2 : rating === '☆' ? 1 : 0,
+              imageFiles: cols[18]?.v || '',
+              videoLink: cols[17]?.v || ''
+            });
+          }
+        });
+
+        const gradeOrder = ['P','8C','8B+','8B','8A+','8A','7C+','7C','7B+','7B','7A+','7A','6C+','6C','6B+','6B','6A+','6A','5+','5','L','–'];
+        const sortedGrades = Object.keys(problemsByGrade).sort((a, b) => gradeOrder.indexOf(a) - gradeOrder.indexOf(b));
+
+        const section = document.getElementById('problems-section');
+        if (sortedGrades.length === 0) {
+          section.innerHTML = '<p>No problems found for this sector.</p>';
+        } else {
+          sortedGrades.forEach(grade => {
+            const header = document.createElement('h2');
+            header.textContent = grade;
+            section.appendChild(header);
+
+            const list = document.createElement('ul');
+            problemsByGrade[grade].sort((a, b) => b.starScore - a.starScore || a.name.localeCompare(b.name)).forEach(p => {
+              const li = document.createElement('li');
+              const hasMedia = p.imageFiles.trim() || p.videoLink.trim();
+              li.innerHTML = `
+                <div class="problem-row">
+                  <span class="camera-icon">${hasMedia ? '📷' : ''}</span>
+                  <a href="problem.html?name=${encodeURIComponent(p.name)}" class="problem-name-link">
+                    <strong>${p.name}</strong>
+                  </a>
+                  <span class="problem-meta">
+                    <span class="rating">${p.rating}</span>
+                    <span class="expo">${p.expo}</span>
+                    <span class="fa-year">${p.faYear}</span>
+                    ${p.circ !== '-' ? `<span class="circ">${p.circ}</span>` : ''}
+                  </span>
+                </div>
+              `;
+              list.appendChild(li);
+            });
+            section.appendChild(list);
+          });
+        }
+        document.getElementById('area-title').classList.remove('hidden');
+        document.getElementById('sector-label').classList.remove('hidden');
+      });
+  </script>
+</body>
+</html>
