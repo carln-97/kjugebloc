@@ -6,6 +6,7 @@
   <title>KjugeBloc</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
 </head>
 <body>
   
@@ -42,24 +43,87 @@
       <div class="right-column">
         <div class="image-wrapper">
           <img src="images/photos/front-photo_baltazar.jpg" alt="Description of image">
-          <p class="image-caption">Unknown climber on 'Baltazar'<br>📸 Unknown</p>  
         </div>
       </div>
     </section>
 
-    <section>
-      <h2>Latest Climbs</h2>
-      <ul>
-        <li>Boulder X – V4</li>
-        <li>The Tree Hugger – V3</li>
-        <!-- etc -->
-      </ul>
+    <section class="latest-climbs-container" style="display: none;">
+      <h2>New Lines</h2>
+      <ul id="latest-climbs"></ul>
     </section>
   </main>
 
-  <footer>
+  <footer style="display: none;">
     <p>© 2025 KjugeBloc</p>
   </footer>
+
+  <script>
+  const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+  const sheetName = 'databas';
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(data => {
+      const json = JSON.parse(data.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      const problems = rows.slice(1).map(row => {
+        const cols = row.c;
+        const timestamp = cols[0]?.v;
+        const name = cols[8]?.v;
+        const grade = cols[9]?.v || '';
+        const rating = cols[12]?.v || '';
+        const expo = cols[11]?.v || '';
+        const faName = cols[15]?.v || '';
+        const images = cols[18]?.v || '';
+        const video = cols[17]?.v || '';
+        const hasMedia = images.trim() !== '' || video.trim() !== '';
+
+        if (timestamp && name) {
+          return {
+            timestamp,
+            name,
+            grade,
+            rating,
+            expo,
+            faName,
+            hasMedia
+          };
+        }
+        return null;
+      }).filter(Boolean);
+
+      problems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      const latestList = document.getElementById('latest-climbs');
+      problems.slice(0, 10).forEach(problem => {
+        const cameraIcon = problem.hasMedia ? '📷' : '';
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="problem-row">
+            <span class="camera-icon">${cameraIcon}</span>
+            <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link">
+              <strong>${problem.name}</strong>
+            </a>
+            <span class="problem-meta">
+              <span class="grade">${problem.grade}</span>
+              <span class="rating">${problem.rating}</span>
+              <span class="expo">${problem.expo}</span>
+              ${problem.faName ? `<span class="fa-name">${problem.faName}</span>` : ''}
+            </span>
+          </div>
+        `;
+        latestList.appendChild(li);
+      });
+      document.querySelector('.latest-climbs-container').style.display = 'block';
+      document.querySelector('footer').style.display = 'block';
+    })
+    .catch(err => {
+      console.error('Failed to load latest climbs:', err);
+      document.getElementById('latest-climbs').innerHTML = '<li>Error loading data.</li>';
+    });
+  </script>
 
 </body>
 </html>
