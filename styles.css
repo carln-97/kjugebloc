@@ -269,7 +269,7 @@ body.about-page .site-branding h1 {
 
 .area-columns {
   display: flex;
-  gap: 40px;
+  gap: 20px;
   align-items: flex-start;
 }
 
@@ -283,6 +283,13 @@ body.about-page .site-branding h1 {
 
 #right-locations {
   text-align: left;
+}
+
+.area-divider {
+  width: 1px;
+  background-color: #fdc14a;
+  height: auto; /* adjusts to the tallest column */
+  align-self: stretch;
 }
 
 .area-index h2 {
