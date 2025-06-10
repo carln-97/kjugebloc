@@ -47,7 +47,7 @@
     </div>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     <p>© 2025 KjugeBloc</p>
   </footer>
 
@@ -279,6 +279,13 @@
           lightbox.style.display = 'none';
         }
       }
+    });
+  </script>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.querySelector('footer').style.visibility = 'visible';
+      }, 1000); // delay in milliseconds (e.g. 500 = 0.5 sec)
     });
   </script>
 </body>
