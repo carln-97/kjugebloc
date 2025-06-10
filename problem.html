@@ -132,6 +132,33 @@
           }
         }
 
+        const rawStyles = (problem[21]?.v || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+        if (rawStyles.length) {
+          const categories = {
+            form: ['arete', 'bulge', 'crack', 'dihedral', 'dyno', 'mantle', 'overhang', 'prow', 'pillar', 'roof', 'slab', 'slightly overhanging', 'traverse', 'wall'],
+            holds: ['edges', 'compression', 'pockets', 'slopers', 'underclings'],
+            other: ['morpho', 'lowball', 'seeping']
+          };
+
+          function categorize(styles, group) {
+            return styles.filter(s => group.includes(s)).sort();
+          }
+
+          const formStyles = categorize(rawStyles, categories.form);
+          const holdStyles = categorize(rawStyles, categories.holds);
+          const otherStyles = categorize(rawStyles, categories.other);
+
+          const orderedStyles = [...formStyles, ...holdStyles, ...otherStyles];
+
+          if (orderedStyles.length) {
+            const styleEl = document.createElement('p');
+            styleEl.className = 'problem-style';
+            styleEl.textContent = orderedStyles.join(', ');
+            faNameEl.insertAdjacentElement('afterend', styleEl);
+          }
+        }
+
         const additionalInfo = problem[23]?.v || '';
         const additionalEl = document.getElementById('problem-additional');
 
