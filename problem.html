@@ -46,9 +46,9 @@
     </div>
   </main>
 
-  <footer>
-    <p>© 2025 KjugeBloc</p>
-  </footer>
+    <footer class="site-footer">
+      <p>© 2025 KjugeBloc</p>
+    </footer>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -138,7 +138,7 @@
           const categories = {
             form: ['arete', 'bulge', 'crack', 'dihedral', 'dyno', 'mantle', 'overhang', 'prow', 'pillar', 'roof', 'slab', 'slightly overhanging', 'traverse', 'wall'],
             holds: ['edges', 'compression', 'pockets', 'slopers', 'underclings'],
-            other: ['morpho', 'lowball', 'seeping']
+            other: ['morpho', 'lowball', 'seeping', 'game']
           };
 
           function categorize(styles, group) {
@@ -154,7 +154,9 @@
           if (orderedStyles.length) {
             const styleEl = document.createElement('p');
             styleEl.className = 'problem-style';
-            styleEl.textContent = orderedStyles.join(', ');
+            styleEl.textContent = orderedStyles.map(word =>
+              word === 'game' ? 'GAME' : word
+            ).join(', ');
             faNameEl.insertAdjacentElement('afterend', styleEl);
           }
         }
