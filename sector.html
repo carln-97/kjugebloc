@@ -115,25 +115,30 @@
             section.appendChild(header);
 
             const list = document.createElement('ul');
-            problemsByGrade[grade].sort((a, b) => b.starScore - a.starScore || a.name.localeCompare(b.name)).forEach(p => {
-              const li = document.createElement('li');
-              const hasMedia = p.imageFiles.trim() || p.videoLink.trim();
-              li.innerHTML = `
-                <div class="problem-row">
-                  <span class="camera-icon">${hasMedia ? '📷' : ''}</span>
-                  <a href="problem.html?name=${encodeURIComponent(p.name)}" class="problem-name-link">
-                    <strong>${p.name}</strong>
-                  </a>
-                  <span class="problem-meta">
-                    <span class="rating">${p.rating}</span>
-                    <span class="expo">${p.expo}</span>
-                    <span class="fa-year">${p.faYear}</span>
-                    ${p.circ !== '-' ? `<span class="circ">${p.circ}</span>` : ''}
-                  </span>
-                </div>
-              `;
-              list.appendChild(li);
-            });
+            problemsByGrade[grade]
+              .sort((a, b) => b.starScore - a.starScore || a.name.localeCompare(b.name))
+              .forEach(p => {
+                const li = document.createElement('li');
+                const hasMedia = p.imageFiles.trim() || p.videoLink.trim();
+                const isPGrade = grade === 'P';
+                const nameStyle = isPGrade ? 'style="color: #999999;"' : '';
+
+                li.innerHTML = `
+                  <div class="problem-row">
+                    <span class="camera-icon">${hasMedia ? '📷' : ''}</span>
+                    <a href="problem.html?name=${encodeURIComponent(p.name)}" class="problem-name-link">
+                      <strong ${nameStyle}>${p.name}</strong>
+                    </a>
+                    <span class="problem-meta">
+                      <span class="rating">${p.rating}</span>
+                      <span class="expo">${p.expo}</span>
+                      <span class="fa-year">${p.faYear}</span>
+                      ${p.circ !== '-' ? `<span class="circ">${p.circ}</span>` : ''}
+                    </span>
+                  </div>
+                `;
+                list.appendChild(li);
+              });
             section.appendChild(list);
           });
         }
