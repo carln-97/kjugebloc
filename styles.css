@@ -5,7 +5,7 @@ body {
   color: #f9f9f9;
   line-height: 1.6;
   padding: 20px;
-
+  overscroll-behavior: none;
 }
 
 main {
@@ -27,7 +27,8 @@ footer {
 
 footer p {
   margin: 0;
-  margin-bottom: 0px;
+  margin-top: 35px;
+  margin-bottom: -20px;
 }
 
 footer.site-footer {
@@ -638,7 +639,7 @@ body.about-page .site-branding h1 {
 }
 
 .problem-text {
-  margin-top: -40px;
+  margin-top: -15px;
   flex: 1;
 }
 
@@ -904,7 +905,7 @@ body.map-page .site-branding h1 {
 }
 
 .sector-text {
-  margin-top: -40px;
+  margin-top: -15px;
   flex: 1;
 }
 
@@ -951,8 +952,12 @@ header, footer {
 .site-header {
   background-color: #272727;
   text-align: left;
-  margin: -20px -20px 40px -20px; /* cancels body padding */
+  margin: -20px -20px 40px -20px;
   padding: 20px 20px 0px 20px;
+  position: sticky;
+  top: 0;
+  overflow: visible;
+  z-index: 100;
 }
 
 .header-content {
