@@ -25,7 +25,12 @@
           <li><a href="access.html">Access</a></li>
           <li><a href="area-index.html">Area Index</a></li>
           <li><a href="map.html">Map</a></li>
-          <li><a href="accomodation.html">Accomodation</a></li>
+          <li><a href="store.html">Store</a></li>
+          <li style="padding-right: 10px;">
+            <a href="#">
+              <img src="images/logo/search-icon.png" alt="Search" style="height: 18px; vertical-align: middle;">
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
@@ -34,7 +39,7 @@
   <main>
 
     <section class="about-row">
-      <div class="about-left" id="dynamic-content"></div>
+      <div class="about-left" id="intro-text"></div>
       <div class="about-right">
         <div class="image-wrapper">
           <img src="images/photos/about-photo_imperator.jpg" alt="Imperator photo">
@@ -43,7 +48,7 @@
     </section>
 
     <section class="about-row reverse">
-      <div class="about-left" id="dynamic-content_2"></div>
+      <div class="about-left" id="ethics-text"></div>
       <div class="about-right">
         <div class="image-wrapper">
           <img src="images/photos/about-photo_toledo.jpg" alt="Lätt Fjäder photo">
@@ -52,7 +57,7 @@
     </section>
 
     <section class="about-row">
-      <div class="about-right" id="dynamic-content_3"></div>
+      <div class="about-right" id="problems-text_1"></div>
       <div class="about-left">
         <div class="image-wrapper">
           <img src="images/photos/about-photo_latt-fjader.jpg" alt="Toledo photo">
@@ -61,7 +66,7 @@
     </section>
 
     <section class="about-row reverse">
-      <div class="about-right" id="dynamic-content_4"></div>
+      <div class="about-right" id="problems-text_2"></div>
       <div class="about-left">
         <div class="image-wrapper">
           <img src="images/photos/about-photo_alla-himmelen.jpg" alt="Alla Himmelen photo">
@@ -70,13 +75,46 @@
     </section>
 
     <section class="about-row">
-      <div class="about-right" id="dynamic-content_5"></div>
+      <div class="about-right" id="problems-text_3"></div>
       <div class="about-left">
         <div class="image-wrapper">
           <img src="images/photos/about-photo_regretto.jpg" alt="Regretto photo">
         </div>
       </div>
     </section>
+
+    <div style="margin-top: 100px;"></div>
+
+    <section id="video-section" class="about-row reverse" style="display: none;">
+      <div class="about-right" id="links"></div>
+      <div class="about-left">
+        <div class="image-wrapper">
+          <iframe 
+            width="100%" 
+            height="315" 
+            src="https://www.youtube.com/embed/FgarKjYpa74?rel=0" 
+            title="Alla Himmelen – KjugeBloc" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </section>
+
+    <div style="display: flex; justify-content: center; margin-top: 0px; margin-bottom: -30px;">
+      <div style="position: relative; display: inline-block;">
+        <img 
+          src="images/logo/ghost.png" 
+          alt="Reveal Video" 
+          style="width: 300px; height: auto; pointer-events: none;" 
+        />
+        <div 
+          onclick="document.getElementById('video-section').style.display='flex'; document.getElementById('video-section').scrollIntoView({ behavior: 'smooth' });"
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: default;"
+        ></div>
+      </div>
+    </div>
 
   </main>
 
@@ -111,17 +149,26 @@
             }
 
             if (line.match(/^\{(.+)\}$/)) {
-              html += `<h1>${line.match(/^\{(.+)\}$/)[1]}</h1>`;
+              const heading = line.match(/^\{(.+)\}$/)[1].trim();
+              html += `<h1>${heading}</h1>`;
+
             } else if (line.match(/^\(\((.+)\)\)$/)) {
-              html += `<h3>${line.match(/^\(\((.+)\)\)$/)[1]}</h3>`;
+              const subheading = line.match(/^\(\((.+)\)\)$/)[1].trim();
+              html += `<h3>${subheading}</h3>`;
+
             } else if (line.startsWith('»')) {
               if (!inArrowList) {
                 html += '<ul class="arrow-list">';
                 inArrowList = true;
               }
-              html += `<li class="arrow-item">${line.replace(/^»\s*/, '')}</li>`;
+
+              const itemText = line.replace(/^»\s*/, '');
+              const linkedText = itemText.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+              html += `<li class="arrow-item">${linkedText}</li>`;
+
             } else if (line.startsWith('•')) {
               html += `<div class="tight-bullet">${line}</div>`;
+
             } else {
               html += `<p>${line}</p>`;
             }
@@ -137,11 +184,12 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      renderFormattedText('text/about_intro.txt', 'dynamic-content');
-      renderFormattedText('text/about_ethics.txt', 'dynamic-content_2');
-      renderFormattedText('text/about_problems_1.txt', 'dynamic-content_3');
-      renderFormattedText('text/about_problems_2.txt', 'dynamic-content_4');
-      renderFormattedText('text/about_problems_3.txt', 'dynamic-content_5');
+      renderFormattedText('text/about_intro.txt', 'intro-text');
+      renderFormattedText('text/about_ethics.txt', 'ethics-text');
+      renderFormattedText('text/about_problems_1.txt', 'problems-text_1');
+      renderFormattedText('text/about_problems_2.txt', 'problems-text_2');
+      renderFormattedText('text/about_problems_3.txt', 'problems-text_3');
+      renderFormattedText('text/links.txt', 'links');
     });
   </script>
 
