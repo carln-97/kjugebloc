@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stats – KjugeBloc</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
+</head>
+<body class="stats-page">
+
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="store.html">Store</a></li>
+          <li style="padding-right: 10px;">
+            <a href="#">
+              <img src="images/logo/search-icon.png" alt="Search" style="height: 18px; vertical-align: middle;">
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <h1 id="area-title" style="text-align: center;">Total number of Climbs</h1>
+    <div style="display: flex; justify-content: center;">
+      <canvas id="gradeChart" width="300" height="200"></canvas>
+    </div>
+
+    <h1 id="area-title" style="text-align: center; margin-top: 100px;">Climbs per Area (by Grade)</h1>
+    <div style="display: flex; justify-content: center;">
+      <canvas id="areaStackedChart" width="900" height="500"></canvas>
+    </div>
+
+    <h1 id="area-title" style="text-align: center; margin-top: 100px;">Climbs per Area (by Stars)</h1>
+    <div style="display: flex; justify-content: center;">
+      <canvas id="starStackedChart" width="900" height="500"></canvas>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2025 <b>KjugeBloc</b></p>
+    <p>
+      <a href="mailto:kjugebloc@gmail.com" style="color: inherit;">
+        kjugebloc@gmail.com
+      </a>
+    </p>
+  </footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+  const sheetName = 'databas';
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(data => {
+      const json = JSON.parse(data.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      const problemsByGrade = {};
+
+      rows.forEach(row => {
+        const grade = row.c[9]?.v?.trim();
+        if (grade) {
+          problemsByGrade[grade] ??= 0;
+          problemsByGrade[grade]++;
+        }
+      });
+
+      const fullLabels = [
+        'L', '5', '5+', '6A', '6A+', '6B', '6B+',
+        '6C', '6C+', '7A', '7A+', '7B', '7B+',
+        '7C', '7C+', '8A', '8A+', '8B', '8B+', '8C', 'P'
+      ];
+
+      const visibleLabels = [];
+      const visibleData = [];
+
+      fullLabels.forEach(label => {
+        const count = problemsByGrade[label] || 0;
+        visibleLabels.push(label);
+        visibleData.push(count);
+      });
+
+      const total = visibleData.reduce((sum, val) => sum + val, 0);
+
+      const totalLabelPlugin = {
+        id: 'totalLabel',
+        afterDraw(chart) {
+          const { ctx, chartArea: { top, right } } = chart;
+          ctx.save();
+          ctx.font = '45px Roboto';
+          ctx.fillStyle = '#999999';
+          ctx.textAlign = 'right';
+          ctx.fillText(`${total}`, right - 8, top + 20);
+          ctx.restore();
+        }
+      };
+
+      const baseHue = 42; // goldish color
+      const baseSaturation = 98;
+      const startLightness = 62;
+      const endLightness = 30;
+
+      const steps = visibleLabels.length;
+      const backgroundColors = visibleLabels.map((_, i) => {
+        const lightness = startLightness - ((startLightness - endLightness) * (i / (steps - 1)));
+        return `hsl(${baseHue}, ${baseSaturation}%, ${lightness}%)`;
+      });
+
+      const ctx = document.getElementById('gradeChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: visibleLabels,
+          datasets: [{
+            data: visibleData,
+            backgroundColor: backgroundColors
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          layout: {
+            padding: {
+              top: 20
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+            datalabels: {
+              anchor: 'end',
+              align: 'end',
+              clamp: true,
+              clip: false, 
+              color: '#aaa',
+              font: {
+                weight: 400,
+                size: 12
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#aaa',
+                font: {
+                  weight: 500,
+                  size: 12
+                }
+              },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              display: false
+            }
+          }
+        },
+        plugins: [ChartDataLabels, totalLabelPlugin]
+      });
+
+
+/* ----------------------------- */
+
+
+      const coarseGradeMap = {
+        'L': 'L',
+        '5': '5', '5+': '5',
+        '6A': '6A', '6A+': '6A',
+        '6B': '6B', '6B+': '6B',
+        '6C': '6C', '6C+': '6C',
+        '7A': '7A', '7A+': '7A',
+        '7B': '7B', '7B+': '7B',
+        '7C': '7C', '7C+': '7C',
+        '8A': '8A', '8A+': '8A',
+        '8B': '8B', '8B+': '8B',
+        '8C': '8C',
+        'P': 'P'
+      };
+
+      const simplifiedGrades = ['L', '5', '6A', '6B', '6C', '7A', '7B', '7C', '8A', '8B', '8C', 'P'];
+      const areaGradeCounts = {};
+
+      rows.forEach(row => {
+        const rawGrade = row.c[9]?.v?.trim();
+        const area = row.c[2]?.v?.trim();
+        if (!rawGrade || !area) return;
+
+        const grade = coarseGradeMap[rawGrade];
+        if (!grade) return;
+
+        areaGradeCounts[area] ??= {};
+        areaGradeCounts[area][grade] ??= 0;
+        areaGradeCounts[area][grade]++;
+      });
+
+      const allAreas = Object.keys(areaGradeCounts).sort();
+
+      const datasets = simplifiedGrades.map(grade => ({
+        label: grade,
+        data: allAreas.map(area => areaGradeCounts[area][grade] || 0),
+        stack: 'climbs'
+      }));
+
+      const ctx2 = document.getElementById('areaStackedChart').getContext('2d');
+      new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: allAreas,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              ticks: {
+                color: '#aaa',
+                font: { size: 10, weight: 400 }
+              },
+              grid: { display: false }
+            },
+            y: {
+              stacked: true,
+              ticks: { color: '#aaa' },
+              grid: { color: '#444' }
+            }
+          }
+        }
+      });
+
+
+/* ----------------------------- */
+
+
+      const starSymbols = ['★', '☆'];
+      const starCountsByArea = {};
+
+      rows.forEach(row => {
+        const area = row.c[2]?.v?.trim();
+        const stars = row.c[12]?.v?.trim(); // column 12 = rating
+        if (!area || !stars) return;
+
+        const countable = stars.includes('★') || stars.includes('☆');
+        if (!countable) return;
+
+        starCountsByArea[area] ??= { '★': 0, '☆': 0 };
+
+        if (stars === '★') starCountsByArea[area]['★']++;
+        if (stars === '☆') starCountsByArea[area]['☆']++;
+      });
+
+      const allAreasWithStars = Object.keys(starCountsByArea).sort();
+
+      const starDatasets = starSymbols.map(symbol => ({
+        label: symbol,
+        data: allAreasWithStars.map(area => starCountsByArea[area][symbol] || 0),
+        stack: 'stars'
+      }));
+
+      const ctx3 = document.getElementById('starStackedChart').getContext('2d');
+      new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: allAreasWithStars,
+          datasets: starDatasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              ticks: {
+                color: '#aaa',
+                font: { size: 10, weight: 400 }
+              },
+              grid: { display: false }
+            },
+            y: {
+              stacked: true,
+              ticks: {
+                color: '#aaa'
+              },
+              grid: {
+                color: '#444'
+              }
+            }
+          }
+        }
+      });
+
+
+    })
+    .catch(err => {
+      console.error('Error loading climb stats:', err);
+    });
+</script>
+
+
+
+</body>
+</html>
