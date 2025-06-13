@@ -35,15 +35,18 @@
   </header>
 
   <main>
-    <section class="two-column">
+    <section id="main-intro" class="two-column" style="display:none">
       <div class="left-column">
-        <p>The purpose of this site is to provide information about the climbing in and around Kjugekull – concealed in the luscious forests of Northern Skåne.</p>
+        <p>The purpose of this site is to provide information about the climbing in and around Kjugekull – by many considered Sweden's best area for bouldering.</p>
   
-        <p class="left-column-italics">Please feel free to contribute by reporting a new climb, sending in photos/videos or other information.<span style="display: block; margin-top: 10px;">It's highly appreciated!</span></p>
+        <p class="left-column-italics">Please feel free to <a href="mailto:kjugebloc@gmail.com" style="text-decoration: underline; color: inherit;">contribute</a> by reporting a new climb, sending in photos/videos or other information.<span style="display: block; margin-top: 10px;">It's highly appreciated!</span></p>
       
-        <p>Currently the database holds nearly 3300 boulderproblems in 31 different areas! Browse through these in the area index or see the locations of sectors and parkings on the map. On the about page you can find out more on KjugeBloc along with some info of ethics and more.</p>
-    
-        <p>Make sure to read the access page, were you find the general "rules" to follow in the forest, as well as important info regarding nature-reserves.</p>
+        <p id="climb-count-text">The KjugeBloc database currently features <span id="climb-count" class="HL-text"></span> boulderproblems across <span id="area-count" class="HL-text"></span> unique areas. Browse the <span class="HL2-text">Area Index</span> to explore problems and first ascentionists, or navigate the <span class="HL2-text">Map</span> to locate sectors and parkings. Visit the <span class="HL2-text">About</span> page for an overview of local climbing ethics and a breakdown of how problems are described — including grades, ratings, and styles.</p>
+        
+        <p>Also be sure to read the <span class="HL2-text">Access</span> page, where you'll find general guidelines for behavior in the forest, along with important information about nature reserves.</p>
+
+        <p>Finally, if you'd like to support KjugeBloc and help keep the site running,<br>check out the <span class="HL2-text">Store</span>!</p>
+
       </div>  
       <div class="right-column">
         <div class="image-wrapper">
@@ -59,7 +62,12 @@
   </main>
 
   <footer style="display: none;">
-    <p>© 2025 KjugeBloc</p>
+    <p>© 2025 <b>KjugeBloc</b></p>
+    <p>
+      <a href="mailto:kjugebloc@gmail.com" style="color: inherit;">
+        kjugebloc@gmail.com
+      </a>
+    </p>
   </footer>
 
   <script>
@@ -121,14 +129,63 @@
         `;
         latestList.appendChild(li);
       });
-      document.querySelector('.latest-climbs-container').style.display = 'block';
       document.querySelector('footer').style.display = 'block';
+
     })
     .catch(err => {
       console.error('Failed to load latest climbs:', err);
       document.getElementById('latest-climbs').innerHTML = '<li>Error loading data.</li>';
     });
   </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
+
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        const validClimbs = [];
+        const uniqueAreas = new Set();
+
+        rows.slice(1).forEach(row => {
+          const cols = row.c;
+          const grade = cols[9]?.v?.trim();
+          const area = cols[2]?.v?.trim();
+
+          if (grade && grade !== 'P' && grade !== '?') {
+            validClimbs.push(row);
+            if (area) {
+              const normalized = area.startsWith('0') ? '0-group' : area;
+              uniqueAreas.add(normalized);
+            }
+          }
+        });
+
+        const climbCount = validClimbs.length;
+        const areaCount = uniqueAreas.size;
+
+        const countEl = document.getElementById('climb-count');
+        const areaEl = document.getElementById('area-count');
+        const introSection = document.getElementById('main-intro');
+        const latestSection = document.querySelector('.latest-climbs-container');
+        const footer = document.querySelector('footer');
+
+        if (countEl) countEl.textContent = climbCount;
+        if (areaEl) areaEl.textContent = areaCount;
+        if (introSection) introSection.style.display = 'flex';
+        if (latestSection) latestSection.style.display = 'block';
+        if (footer) footer.style.display = 'block';
+      })
+      .catch(err => {
+        console.error('Failed to load climb and area data:', err);
+      });
+  });
+</script>
 
 </body>
 </html>
