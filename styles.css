@@ -16,6 +16,7 @@ main {
 
 footer {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 13px;
@@ -29,11 +30,21 @@ footer p {
   margin: 0;
   margin-top: 35px;
   margin-bottom: -20px;
+  font-weight: 300;
+}
+
+footer a {
+  text-decoration: none;    /* remove underline */
+  color: inherit;           /* match surrounding text */
+  position: relative;
+  top: -15px;                /* nudge upward slightly */
+  font-weight: 300;
 }
 
 footer.site-footer {
   visibility: hidden;
 }
+
 
 
 
@@ -68,7 +79,7 @@ footer.site-footer {
 .left-column {
   flex: 1;
   font-size: 14px;
-  max-width: 500px;
+  max-width: 530px;
   margin-right: auto;
   margin-top: 60px;
 }
@@ -83,6 +94,15 @@ footer.site-footer {
   padding: 5px;
 }
 
+.HL-text {
+  color: #fdc14a;
+  font-weight: bold;
+}
+
+.HL2-text {
+  color: #999999;
+  font-weight: bold;
+}
 
 
 
@@ -181,7 +201,7 @@ footer.site-footer {
   padding-bottom: 10px;
   padding-left: 20px;
   padding-right: -200px;
-  margin-top: 40px;
+  margin-top: 90px;
   margin-bottom: 0px;
   border: 1px solid #fdc14a;
   border-radius: 8px;
@@ -926,6 +946,16 @@ body.map-page .site-branding h1 {
   display: none;
 }
 
+
+
+/* --- STATS page --- */
+
+.stats-page #gradeChart {
+  width: 600px !important;
+  max-width: 600px;
+  height: 400px !important;
+  max-height: 400px;
+}
 
 
 
