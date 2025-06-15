@@ -81,7 +81,29 @@
 
       if (imageList[index]) {
         lightboxImg.src = toDirectImgurURL(imageList[index]);
-        caption.textContent = captionList[index] || '';
+        const rawCaption = captionList[index] || '';
+        const climberMatch = rawCaption.match(/\bClimber:\s*([^\n,]+)/i);
+        const photoMatch = rawCaption.match(/Photo:\s*([^\n]+)/i);
+
+        let climberHTML = '';
+        if (climberMatch) {
+          const climberText = climberMatch[1].trim();
+          const [climberName, rest] = climberText.split(/\s+on\s+/, 2);  // splits into name and rest
+
+          const faLink = `person.html?name=${encodeURIComponent(climberName)}`;
+          const nameHTML = `<a href="${faLink}" class="caption-name-link">${climberName}</a>`;
+          const restText = rest ? ` on ${rest}` : '';
+
+          climberHTML = `<div><strong>Climber:</strong> ${nameHTML}${restText}</div>`;
+        }
+
+        let photoHTML = '';
+        if (photoMatch) {
+          const photographer = photoMatch[1].trim();
+          photoHTML = `<div style="text-align: center; color: #888;"><strong>Photo:</strong> ${photographer}</div>`;
+        }
+
+        caption.innerHTML = climberHTML + photoHTML;
         document.getElementById('lightbox').style.display = 'flex';
         currentImageIndex = index;
       }
