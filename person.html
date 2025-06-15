@@ -238,7 +238,9 @@
       const lightboxTitle = document.getElementById('lightbox-title');
       
       lightboxImg.src = image.file;
-      lightboxCaption.textContent = image.caption;
+lightboxCaption.innerHTML = image.caption
+  .replace(/\bClimber:\s*([^\n,]+)/i, '<div><strong>Climber:</strong> $1</div>')
+  .replace(/,?\s*Photo:\s*([^\n]+)/i, '<div style="text-align: center; color: #888;"><strong>Photo:</strong> $1</div>');
       lightboxTitle.innerHTML = `
         <a href="problem.html?name=${encodeURIComponent(image.problemName)}">
           ${image.problemName}
