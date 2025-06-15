@@ -697,6 +697,15 @@ body.about-page .site-branding h1 {
   }
 }
 
+.caption-name-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.caption-name-link:hover {
+  text-decoration: underline;
+}
 
 
 
@@ -838,6 +847,13 @@ body.about-page .site-branding h1 {
 .lightbox-nav {
   visibility: hidden;
   position: absolute;
+}
+
+.caption-block {
+  text-align: center;
+  font-size: 14px;
+  color: #f9f9f9;
+  line-height: 1.4;
 }
 
 
