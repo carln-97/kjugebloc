@@ -976,7 +976,7 @@ body.map-page .site-branding h1 {
 
 
 
-/* --- SEARCH page --- */
+/* --- SEARCH bar --- */
 
 #search-overlay {
   position: fixed;
@@ -1042,7 +1042,288 @@ body.map-page .site-branding h1 {
   background-color: #444;
 }
 
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+}
 
+#adv-search-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  border-radius: 5px;   
+  width: 45px;
+  height: 40px;
+  box-sizing: border-box;
+  margin-left: 15px; 
+  margin-top: -8px;
+}
+
+#adv-search-link img {
+  width: 18px;
+  height: 18px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* --- ADV-SEARCH page --- */
+
+
+
+#grade-slider {
+  width: 160px;
+  margin: 0 auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  line-height: 0;
+}
+
+#grade-slider .noUi-origin {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+#grade-slider .noUi-target {
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+#grade-slider .noUi-base {
+  background: #777;
+  height: 3px;
+  margin: 0;
+  border-radius: 0;
+}
+
+#grade-slider .noUi-connect {
+  background: #f1c232;
+  height: 3px;
+  top: 0;
+  left: 8px; /* Offset to align with handle center */
+  margin: 0; /* Remove all margins */
+}
+
+/* The draggable yellow handles */
+#grade-slider .noUi-handle {
+  width: 16px;
+  height: 16px;
+  background: #f1c232;
+  border: 2px solid white;
+  border-radius: 50%;
+  top: -7px;
+  box-shadow: none;
+  cursor: grab;
+}
+
+#grade-slider .noUi-handle-lower {
+  transform: translateX(-1px);
+}
+
+/* Hover/active effects */
+#grade-slider .noUi-handle:hover {
+  background: #ffd966;
+}
+
+#grade-slider .noUi-handle:active {
+  transform: scale(1.1);
+  cursor: grabbing;
+}
+
+/* Remove default handle decorations */
+#grade-slider .noUi-handle:before,
+#grade-slider .noUi-handle:after {
+  display: none;
+}
+
+#grade-range-display {
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.icon-toggle {
+  cursor: pointer;
+  font-size: 20px;
+  color: #777;
+  transition: color 0.2s ease;
+}
+
+.icon-toggle.active {
+  color: #f1c232; /* or any highlight color you prefer */
+}
+
+#toggle-expo {
+  font-family: 'Arial Black', Gadget, sans-serif;
+}
+
+#toggle-expo.active {
+  color: #cc0000; /* keep red even when active */
+}
+
+#toggle-expo.no-expo {
+  color: #222; /* black when filtering out expo problems */
+}
+
+.style-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 10px;
+}
+
+.style-checkbox {
+  font-size: 13px;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+
+#sector-group {
+  display: none;
+}
+
+
+
+/* Fix for search results alignment */
+
+#search-results .result-row {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+
+.adv-search .problem-row {
+  display: flex;
+  align-items: center; /* This ensures all elements align to the same baseline */
+  gap: 8px;
+  line-height: 1.2; /* Consistent line height */
+}
+
+.adv-search .problem-name-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex; /* Changed from inline to inline-flex */
+  align-items: center; /* Align with other elements */
+}
+
+.adv-search .problem-name-link strong {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #f9f9f9;
+  text-decoration: none;
+  cursor: pointer;
+  line-height: 1.2; /* Match parent line height */
+}
+
+.adv-search .problem-meta {
+  font-size: 13px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center; /* Changed from baseline to center for better alignment */
+  color: #999;
+  line-height: 1.2; /* Consistent line height */
+}
+
+.adv-search .grade {
+  font-weight: 900;
+  color: #777;
+  font-size: 13px;
+  line-height: 1.2;
+  /* Removed position relative and top offset */
+}
+
+.adv-search .rating {
+  color: #f1c232;
+  font-size: 12px;
+  line-height: 1.2;
+  top: -0.1em;
+  /* Removed position relative and top offset */
+}
+
+.adv-search .expo {
+  font-family: 'Arial Black', Gadget, sans-serif;
+  color: #cc0000;
+  font-size: 13px;
+  line-height: 1.2;
+  position: relative;
+  top: -0.1em;
+  /* Removed position relative and top offset */
+}
+
+.adv-search .area-name {
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.2;
+  margin-left: 6px;
+  /* Removed position relative and top offset */
+}
+
+
+
+.adv-search .problem-name-link strong {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #f9f9f9;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.adv-search .problem-name-link strong {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.adv-search .problem-name-link:hover strong::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 1px;
+  width: 100%;
+  height: 1px;
+  background-color: #f9f9f9;
+}
+
+.results-heading {
+  position: sticky;
+  top: 0;
+  background-color: #2d2d2d;
+  padding: 8px 0;
+  font-size: 16px;
+  color: #f9f9f9;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px; /* small gap between "Results" and the count */
+  font-weight: bold;
+}
+
+#results-count {
+  font-weight: normal;
+  color: #aaa;
+}
+
+.adv-search .site-branding h1 {
+  visibility: hidden;
+}
 
 
 
