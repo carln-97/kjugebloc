@@ -143,17 +143,28 @@
         document.getElementById('problem-description').textContent = description;
 
         const faName = problem[15]?.v || '';
-        const Year = problem[16]?.v || '';
+        const Year = problem[16]?.f || problem[16]?.v || '';
+        console.log('Raw year:', Year);
         const faNameEl = document.getElementById('fa-name');
 
         if (faNameEl) {
           if (faName || Year) {
             let content = '';
+
             if (faName) {
-              content += `<a href="person.html?name=${encodeURIComponent(faName)}" class="fa-name-link">${faName}</a>`;
+              const faNames = faName.split(',').map(s => s.trim()).filter(Boolean);
+              content += faNames.map(name => {
+                const cleanName = name.replace(/^\(|\)$/g, '').trim(); // for linking
+                return `<a href="person.html?name=${encodeURIComponent(cleanName)}" class="fa-name-link">${name}</a>`;
+              }).join(', ');
             }
-            if (Year) content += `<span style="margin-left: 10px;">${Year}</span>`;
+
+            if (Year) {
+              content += `<span style="margin-left: 10px;">${Year}</span>`;
+            }
+
             faNameEl.innerHTML = content;
+            console.log('FA display content:', content);
           } else {
             faNameEl.textContent = '–';
           }
