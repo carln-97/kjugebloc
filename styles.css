@@ -1331,6 +1331,66 @@ body.map-page .site-branding h1 {
 
 
 
+/* --- STORE page --- */
+
+body.store-page .site-branding h1 {
+  visibility: hidden;
+}
+
+.store-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.store-image-grid img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 6px;
+  background-color: #1c1c1c;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.store-image-grid img:hover {
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+.product-description {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --- Lightbox for store images --- */
+#lightbox {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  cursor: zoom-out;
+}
+
+#lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 6px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+
+
+
+
+
+
+
 header, footer {
   text-align: center;
   margin: 5px 30px 40px 0;
