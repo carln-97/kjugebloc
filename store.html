@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store – KjugeBloc</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;1,100;1,300;1,400;1,500&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
+</head>
+<body class="store-page">
+
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <a href="index.html">
+          <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        </a>
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="store.html" class="active">Store</a></li>
+          <li style="padding-right: 10px;">
+            <a href="#" id="search-trigger">
+              <img src="images/logo/search-icon.png" alt="Search" style="height: 18px; vertical-align: middle;">
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="about-row">
+      <div class="about-left product-description">
+        <h1>KjugeBloc Tee</h1>
+        <p>Simple, soft, and printed locally – this tee features the KjugeBloc logo in a clean and minimal design. Available in unisex sizing.</p>
+        <p>Printed on Stanley/Stella organic cotton. Pre-shrunk and responsibly made. Help support the site and look good doing it.</p>
+      </div>
+      <div class="about-right">
+        <div class="store-image-grid">
+          <img src="images/store/kjugebloc-tee_1.jpg" alt="KjugeBloc Tee 1">
+          <img src="images/store/kjugebloc-tee_2.jpg" alt="KjugeBloc Tee 2">
+        </div>
+      </div>
+    </section>
+
+    <section class="about-row">
+      <div class="about-left product-description">
+        <h1>Kjuge Classic</h1>
+        <p>A limited print of the original Kjugekull topo artwork. Available as a thick, matte poster on 300gsm paper (50×70cm).</p>
+        <p>Perfect for your gear room or climbing hut. Ships in a protective roll. All proceeds go to site maintenance and future community projects.</p>
+      </div>
+      <div class="about-right">
+        <div class="store-image-grid">
+          <img src="images/store/kjuge-classic_1.jpg" alt="Kjuge Classic 1">
+          <img src="images/store/kjuge-classic_2.jpg" alt="Kjuge Classic 2">
+          <img src="images/store/kjuge-classic_3.jpg" alt="Kjuge Classic 3">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>© 2025 <b>KjugeBloc</b></p>
+    <p>
+      <a href="mailto:kjugebloc@gmail.com" style="color: inherit;">
+        kjugebloc@gmail.com
+      </a>
+    </p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lightbox">
+    <img id="lightbox-img" src="" alt="Enlarged product" />
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const storeImages = Array.from(document.querySelectorAll('.store-image-grid img'));
+    let currentIndex = -1;
+
+    storeImages.forEach((img, index) => {
+      img.addEventListener('click', () => {
+        currentIndex = index;
+        lightboxImg.src = img.src;
+        lightbox.style.display = 'flex';
+      });
+    });
+
+    lightbox.addEventListener('click', () => {
+      lightbox.style.display = 'none';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'ArrowRight') {
+          currentIndex = (currentIndex + 1) % storeImages.length;
+          lightboxImg.src = storeImages[currentIndex].src;
+        } else if (e.key === 'ArrowLeft') {
+          currentIndex = (currentIndex - 1 + storeImages.length) % storeImages.length;
+          lightboxImg.src = storeImages[currentIndex].src;
+        } else if (e.key === 'Escape') {
+          lightbox.style.display = 'none';
+        }
+      }
+    });
+  </script>
+
+  <script src="search.js"></script>
+</body>
+</html>
