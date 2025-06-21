@@ -117,8 +117,18 @@
             .filter(Boolean);
           const captions = cols[19]?.v?.split(';').map(s => s.trim()) || [];
 
-          // Build first ascents list
-          if (problemFA === faName && name && grade) {
+          const faNamesRaw = cols[15]?.v || '';
+          const faNames = faNamesRaw.split(',').map(s => s.trim());
+
+          // Normalize the name from the URL (strip surrounding parentheses, spaces)
+          const normalizedFaName = faName.replace(/^\(|\)$/g, '').trim();
+
+          // Check if any normalized FA name matches the normalized URL name
+          const matches = faNames.some(n =>
+            n.replace(/^\(|\)$/g, '').trim() === normalizedFaName
+          );
+
+          if (matches && name && grade) {
             problemsByGrade[grade] ??= [];
             problemsByGrade[grade].push({
               name,
