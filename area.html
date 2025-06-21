@@ -76,6 +76,8 @@
     problems: false
   };
 
+  loadAreaImageFromCSV(areaName);
+
   function checkAndShowContent() {
     const areaImg = document.getElementById('area-image');
     const textContainer = document.getElementById('area-text');
@@ -101,24 +103,54 @@
       .replace(/ö/g, 'o');
   }
 
-  const areaImg = document.getElementById('area-image');
-  const imagePath = `images/area-image/${sanitizeName(areaName)}_1.jpg`;
-  areaImg.src = imagePath;
+  function toDirectImgurURL(url) {
+    const match = url.match(/imgur\.com\/([a-zA-Z0-9]+)(\.\w+)?/);
+    if (match) {
+      const ext = match[2] || '.jpg';
+      return `https://i.imgur.com/${match[1]}${ext}`;
+    }
+    return url;
+  }
 
-  areaImg.onload = () => {
-    areaImg.alt = `${areaName} image`;
-    loadingStates.image = true;
-    checkAndShowContent();
-  };
+  function loadAreaImageFromCSV(areaName) {
+    const areaImg = document.getElementById('area-image');
 
-  areaImg.onerror = () => {
-    areaImg.style.display = 'none';
-    areaImg.alt = '';
-    loadingStates.image = true;
-    checkAndShowContent();
-    areaImg.onerror = null;
-    areaImg.onload = null;
-  };
+    fetch('images/area-photos/area-photos.csv')
+      .then(res => res.text())
+      .then(csv => {
+        const lines = csv.trim().split('\n');
+        lines.shift(); // remove header
+
+        for (const line of lines) {
+          const [csvArea, link, caption] = line.split(',').map(s => s.trim());
+          if (csvArea.toLowerCase() === areaName.toLowerCase()) {
+            areaImg.src = toDirectImgurURL(link);
+            areaImg.alt = caption || '';
+            areaImg.onload = () => {
+              loadingStates.image = true;
+              checkAndShowContent();
+            };
+            areaImg.onerror = () => {
+              areaImg.style.display = 'none';
+              loadingStates.image = true;
+              checkAndShowContent();
+            };
+            return;
+          }
+        }
+
+        // No match
+        areaImg.style.display = 'none';
+        loadingStates.image = true;
+        checkAndShowContent();
+      })
+      .catch(err => {
+        console.error('Failed to load area image:', err);
+        areaImg.style.display = 'none';
+        loadingStates.image = true;
+        checkAndShowContent();
+      });
+  }
 
   const areaTextPath = `text/area-text/${sanitizeName(areaName)}.txt`;
   fetch(areaTextPath)
