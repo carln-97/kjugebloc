@@ -7,7 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
   overlay.id = "search-overlay";
   overlay.innerHTML = `
     <div id="search-box">
-      <input type="text" id="search-input" placeholder="Search problems, areas, sectors, persons..." />
+      <div class="search-input-wrapper">
+        <input type="text" id="search-input" placeholder="Search problems, areas, sectors, persons..." />
+        <a href="adv-search.html" id="adv-search-link" title="Advanced Search">
+          <img src="images/logo/search-icon_adv.png" alt="Advanced Search" />
+        </a>
+      </div>
       <div id="search-results"></div>
     </div>
   `;
@@ -66,11 +71,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const captionsRaw = cols[19]?.v || '';
 
       // --- Problem ---
-      if (problem?.toLowerCase().includes(query)) {
-        const grade = cols[9]?.v || '';
-        const label = problem;
-        const display = `${label}|||${grade}`; // pack both into a string
-        matches.Problems.set(label, { href: `problem.html?name=${encodeURIComponent(problem)}`, grade });
+      if (problem) {
+        const problemLower = problem.toLowerCase();
+        let score = Infinity;
+
+        if (problemLower === query) {
+          score = 0; // perfect match
+        } else if (problemLower.includes(query)) {
+          // score: number of non-matching characters
+          score = problemLower.length - query.length;
+        }
+
+        if (score < Infinity) {
+          const grade = cols[9]?.v || '';
+          matches.Problems.set(problem, {
+            href: `problem.html?name=${encodeURIComponent(problem)}`,
+            grade,
+            score
+          });
+        }
       }
 
       // --- Area ---
@@ -88,8 +107,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // --- Person (from faName) ---
-      if (faName?.toLowerCase().includes(query)) {
-        matches.Persons.set(faName, `person.html?name=${encodeURIComponent(faName)}`);
+      if (faName) {
+        faName.split(',').map(s => s.trim()).forEach(name => {
+          const displayName = name; // original (e.g., "(Gustav Kamf)")
+          const cleanName = name.replace(/^\(|\)$/g, '').trim(); // remove parentheses
+
+          if (cleanName.toLowerCase().includes(query)) {
+            matches.Persons.set(cleanName, `person.html?name=${encodeURIComponent(cleanName)}`);
+          }
+        });
       }
 
       // --- Person (from captions) ---
@@ -119,7 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
       group.appendChild(heading);
 
       if (category === "Problems") {
-        for (const [label, data] of map.entries()) {
+        const sortedEntries = [...map.entries()].sort((a, b) => a[1].score - b[1].score);
+        for (const [label, data] of sortedEntries) {
           const item = document.createElement("a");
           item.href = data.href;
           item.className = "result-item";
@@ -128,39 +155,28 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
           group.appendChild(item);
         }
+      } else if (category === "Sectors") {
+        for (const [label, data] of map.entries()) {
+          const item = document.createElement("a");
+          item.href = data.href;
+          item.className = "result-item";
+          item.innerHTML = `
+            ${label} <span style="font-weight: normal; color: #777; margin-left: 6px;">${data.area}</span>
+          `;
+          group.appendChild(item);
+        }
       } else {
-          if (category === "Problems") {
-            for (const [label, data] of map.entries()) {
-              const item = document.createElement("a");
-              item.href = data.href;
-              item.className = "result-item";
-              item.innerHTML = `
-                ${label} <span style="font-weight: bold; color: #777; margin-left: 6px;">${data.grade}</span>
-              `;
-              group.appendChild(item);
-            }
-          } else if (category === "Sectors") {
-            for (const [label, data] of map.entries()) {
-              const item = document.createElement("a");
-              item.href = data.href;
-              item.className = "result-item";
-              item.innerHTML = `
-                ${label} <span style="font-weight: normal; color: #777; margin-left: 6px;">${data.area}</span>
-              `;
-              group.appendChild(item);
-            }
-          } else {
-            for (const [label, href] of map.entries()) {
-              const item = document.createElement("a");
-              item.href = href;
-              item.className = "result-item";
-              item.textContent = label;
-              group.appendChild(item);
-            }
-          }
+        for (const [label, href] of map.entries()) {
+          const item = document.createElement("a");
+          item.href = href;
+          item.className = "result-item";
+          item.textContent = label;
+          group.appendChild(item);
+        }
       }
 
       resultsBox.appendChild(group);
     }
+
   });
 });
