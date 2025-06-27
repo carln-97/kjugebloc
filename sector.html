@@ -66,6 +66,9 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const sectorName = params.get('sector');
+    if (sectorName) {
+      document.title = `${sectorName}`;
+    }
     document.getElementById('area-title').textContent = sectorName || 'Unknown Sector';
 
     const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
