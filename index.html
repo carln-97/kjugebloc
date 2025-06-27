@@ -71,6 +71,17 @@
   </footer>
 
   <script>
+    let introLoaded = false;
+    let climbsLoaded = false;
+
+    function checkShowFooter() {
+      if (introLoaded && climbsLoaded) {
+        document.querySelector('footer').style.display = 'block';
+      }
+    }
+  </script>
+
+  <script>
   const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
   const sheetName = 'databas';
   const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -129,7 +140,9 @@
         `;
         latestList.appendChild(li);
       });
-      document.querySelector('footer').style.display = 'block';
+      climbsLoaded = true;
+      checkShowFooter();
+
 
     })
     .catch(err => {
@@ -179,7 +192,9 @@
         if (areaEl) areaEl.textContent = areaCount;
         if (introSection) introSection.style.display = 'flex';
         if (latestSection) latestSection.style.display = 'block';
-        if (footer) footer.style.display = 'block';
+        introLoaded = true;
+        checkShowFooter();
+
       })
       .catch(err => {
         console.error('Failed to load climb and area data:', err);
