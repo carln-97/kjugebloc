@@ -103,14 +103,18 @@
     </section>
 
     <div style="display: flex; justify-content: center; margin-top: 0px; margin-bottom: -30px;">
-      <div style="position: relative; display: inline-block;">
+      <div id="ghost-reveal" style="position: relative; display: inline-block;">
         <img 
           src="images/logo/ghost.png" 
           alt="Reveal Video" 
           style="width: 300px; height: auto; pointer-events: none;" 
         />
         <div 
-          onclick="document.getElementById('video-section').style.display='flex'; document.getElementById('video-section').scrollIntoView({ behavior: 'smooth' });"
+          onclick="
+            document.getElementById('video-section').style.display='flex';
+            document.getElementById('video-section').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('ghost-reveal').style.display = 'none';
+          "
           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: default;"
         ></div>
       </div>
