@@ -39,6 +39,7 @@
     <div class="problem-text">
       <p class="area-name-label hidden" id="area-name-wrapper">
         <span class="area-prefix">» </span><a id="area-name-label" class="area-link" href="#"></a>
+          <span id="sector-separator" class="breadcrumb-separator" style="display: none;">//</span><a id="sector-name-label" class="area-link" href="#"></a>
       </p>
       <h1 id="problem-name">Loading...</h1>
       <p id="fa-name" class="fa-name"></p>
@@ -58,6 +59,9 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const problemName = urlParams.get('name');
+    if (problemName) {
+      document.title = `${problemName}`;
+    }
 
     const sheetId = '1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU';
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=databas`;
@@ -131,6 +135,15 @@
           areaNameEl.href = `area.html?area=${encodeURIComponent(area)}`;
           wrapper.classList.remove('hidden');
         }
+        const sector = problem[3]?.v || '';
+        const sectorNameEl = document.getElementById('sector-name-label');
+        const sectorSeparator = document.getElementById('sector-separator');
+
+        if (sector && sectorNameEl) {
+          sectorNameEl.textContent = sector;
+          sectorNameEl.href = `sector.html?sector=${encodeURIComponent(sector)}`;
+          sectorSeparator.style.display = 'inline';
+        }
         document.getElementById('problem-name').innerHTML = `
           ${name} 
           <span class="problem-meta-inline">
@@ -140,7 +153,10 @@
           </span>
         `;
 
-        document.getElementById('problem-description').textContent = description;
+        const formattedDescription = description.replace(/"(.*?)"/g, (_, match) =>
+          `<span style="font-family: 'Libre Baskerville', serif; font-style: italic;">${match}</span>`
+        );
+        document.getElementById('problem-description').innerHTML = formattedDescription;
 
         const faName = problem[15]?.v || '';
         const Year = problem[16]?.f || problem[16]?.v || '';
