@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Circuits – KjugeBloc</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500;1,700&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" href="images/logo/tab_icon.png" type="image/png" />
+</head>
+<body class="circuit-page">
+
+  <header class="site-header">
+    <div class="header-content">
+      <div class="site-branding">
+        <a href="index.html">
+          <img src="images/logo/front-icon_rocks.png" alt="KjugeBloc logo" class="logo">
+        </a>
+        <h1>KjugeBloc</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="access.html">Access</a></li>
+          <li><a href="area-index.html">Area Index</a></li>
+          <li><a href="map.html">Map</a></li>
+          <li><a href="store.html">Store</a></li>
+          <li style="padding-right: 10px;"><a href="#" id="search-trigger">
+            <img src="images/logo/search-icon.png" alt="Search" style="height: 18px; vertical-align: middle;">
+          </a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div id="kjugekull-wrapper">
+      <h1>Kjugekull Circuits</h1>
+      <div class="area-columns" id="kjuge-columns" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div id="col-0"></div>
+        <div id="col-1" class="wide-column"></div>
+        <div id="col-2" class="nudge-right"></div>
+      </div>
+    </div>
+
+    <div id="panshamn-wrapper">
+      <div style="margin-top: 80px;"></div>
+      <h1>Panshamn Circuit</h1>
+      <div id="other-circuits" style="display: flex; justify-content: space-between; gap: 0px; flex-wrap: nowrap; margin-top: 20px;"></div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2025 <b>KjugeBloc</b></p>
+    <p><a href="mailto:kjugebloc@gmail.com">kjugebloc@gmail.com</a></p>
+  </footer>
+
+  <script src="search.js"></script>
+  <script>
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1VwZM08gTUNHlpWGDaBUWnYdiqgUFicWoD3fDJJwE7rU/gviz/tq?tqx=out:json&sheet=databas';
+      const columnGrades = [
+        ['L',  '5-', '5+'],
+        ['6A', '6B', '6C'],
+        ['7A', '7B', '']
+      ];
+
+    const kjugeGrades = new Set(['L', '5-', '5+', '6A', '6B', '6C', '7A', '7B']);
+    const kjugeCircuits = {};
+    const otherCircuits = {};
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const area = urlParams.get('area')?.toLowerCase() || '';
+
+    const isPanshamn = area === 'panshamn';
+    const isKjuge = area.startsWith('0');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (isKjuge) {
+        const panshamnWrapper = document.getElementById('panshamn-wrapper');
+        if (panshamnWrapper) panshamnWrapper.style.display = 'none';
+      } else if (isPanshamn) {
+        const kjugeWrapper = document.getElementById('kjugekull-wrapper');
+        if (kjugeWrapper) kjugeWrapper.style.display = 'none';
+
+        // Also hide the top-margin div inside #panshamn-wrapper
+        const marginDiv = document.querySelector('#panshamn-wrapper > div[style*="margin-top"]');
+        if (marginDiv) marginDiv.style.display = 'none';
+      }
+    });
+
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(text => {
+        const data = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = data.table.rows;
+
+        rows.forEach(row => {
+          const cols = row.c;
+          const area = cols[2]?.v?.trim();
+          const name = cols[8]?.v?.trim();
+          const circ = cols[7]?.v?.trim();
+
+          if (!name || !circ) return;
+
+          if (area?.startsWith('0')) {
+            const match = circ.match(/^\[([^\]]+)\]\s*:\s*(\d+)/);
+            if (match) {
+              const grade = match[1];
+              const num = parseInt(match[2]);
+              if (kjugeGrades.has(grade)) {
+                kjugeCircuits[grade] ??= [];
+                kjugeCircuits[grade].push({
+                  number: num,
+                  name,
+                  grade: cols[9]?.v || '',
+                  rating: cols[12]?.v || '',
+                  expo: cols[11]?.v || ''
+                });
+              }
+            }
+          } else {
+            let tag = null;
+
+            if (/^FIN$/i.test(circ)) {
+              tag = "FIN";
+            } else {
+              const match = circ.match(/^(\d+[a-zA-Z]*)$/);
+              if (match) {
+                tag = match[1];
+              }
+            }
+
+            if (tag) {
+              otherCircuits[tag] ??= [];
+              otherCircuits[tag].push({
+                name,
+                grade: cols[9]?.v || '',
+                rating: cols[12]?.v || '',
+                expo: cols[11]?.v || ''
+              });
+            }
+          }
+      });
+
+        // Render Kjugekull circuits
+        const columnContainers = [document.getElementById('col-0'), document.getElementById('col-1'), document.getElementById('col-2')];
+
+        for (let row = 0; row < columnGrades.length; row++) {
+          for (let col = 0; col < columnGrades[row].length; col++) {
+            const grade = columnGrades[row][col];
+            const container = document.getElementById(`col-${col}`);
+            if (!grade || !container) continue;
+
+            const wrapper = document.createElement('div');
+
+            const header = document.createElement('h2');
+            header.textContent = grade;
+            wrapper.appendChild(header);
+
+            const ul = document.createElement('ul');
+            ul.style.listStyle = 'none';
+            ul.style.paddingLeft = '0';
+            ul.style.margin = '0';
+            ul.style.flex = '0 0 22%';
+            const problems = (kjugeCircuits[grade] || []).sort((a, b) => a.number - b.number);
+
+            problems.forEach(p => {
+              const li = document.createElement('li');
+              li.innerHTML = `
+                <div class="problem-row">
+                  <span style="color: #777; font-size: 80%; font-weight: 300; top: -1px; width: 1.6em; display: inline-block;">${p.number < 10 ? '&nbsp;' : ''}${p.number}</span>
+                  <a href="problem.html?name=${encodeURIComponent(p.name)}" class="problem-name-link">
+                    ${p.name}
+                  </a>
+                  <span class="problem-meta">
+                    <span class="grade" style="font-weight: 900; color: #777;">${p.grade}</span>
+                    <span class="rating">${p.rating}</span>
+                    <span class="expo">${p.expo}</span>
+                  </span>
+                </div>
+              `;
+              ul.appendChild(li);
+            });
+
+            wrapper.appendChild(ul);
+            container.appendChild(wrapper);
+          }
+        }
+
+
+        const otherListContainer = document.getElementById('other-circuits');
+
+        // Separate out FIN problems
+        const finProblems = [];
+        const regularEntries = [];
+
+        Object.entries(otherCircuits).forEach(([tag, problems]) => {
+          if (tag.toUpperCase() === "FIN") {
+            problems.forEach(p => finProblems.push({ tag, ...p }));
+          } else {
+            regularEntries.push([tag, problems]);
+          }
+        });
+
+        // Sort regular entries by tag (e.g., 1, 2a, 3b...)
+        const sortedProblems = regularEntries
+          .sort((a, b) => {
+            const extractParts = s => {
+              const match = s.match(/^(\d+)([a-zA-Z]*)$/);
+              return match ? [parseInt(match[1]), match[2] || ''] : [Number.MAX_SAFE_INTEGER, s];
+            };
+            const [numA, suffixA] = extractParts(a[0]);
+            const [numB, suffixB] = extractParts(b[0]);
+            return numA - numB || suffixA.localeCompare(suffixB);
+          })
+          .flatMap(([tag, problems]) => problems.map(p => ({ tag, ...p })));
+
+        // Combine regular + FIN at the end
+        const allOtherProblems = [...sortedProblems, ...finProblems];
+
+        // Split into chunks of 20 (4 rows)
+        const chunkSize = 30;
+        for (let i = 0; i < 4; i++) {
+          const chunk = allOtherProblems.slice(i * chunkSize, (i + 1) * chunkSize);
+          if (chunk.length === 0) continue;
+
+          const ul = document.createElement('ul');
+
+          chunk.forEach(problem => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <div class="problem-row">
+                <span style="color: #777; font-size: 80%; font-weight: 300; top: -1px; width: 1.6em; display: inline-block;">${problem.tag}</span>
+                <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link" title="${problem.name}">
+                  ${problem.name}
+                </a>
+                <span class="problem-meta">
+                  <span class="grade" style="font-weight: 900; color: #777;">${problem.grade}</span>
+                  <span class="rating">${problem.rating}</span>
+                  <span class="expo">${problem.expo}</span>
+                </span>
+              </div>
+            `;
+            ul.appendChild(li);
+          });
+
+          otherListContainer.appendChild(ul);
+        }
+      });
+  </script>
+</body>
+</html>
