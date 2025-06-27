@@ -48,6 +48,15 @@
       </div>
       <div class="problems-and-image-row">
         <div class="area-left">
+          <div id="sort-toggle-wrapper" style="display: none; margin-bottom: 20px;">
+            <span id="sort-toggle" style="font-size: 14px; cursor: pointer; color: #777;">
+              <strong>Sort by:</strong> 
+              <span id="sort-grade" style="text-decoration: underline;">grades</span> | 
+                <span id="sort-bloc" style="text-decoration: none;">bloc groupings</span> | 
+                <span id="sort-year" style="text-decoration: none;">year</span>
+                <span id="sort-circuit-placeholder"></span>
+            </span>
+          </div>
           <section id="problems-section"></section>
         </div>
         <div class="area-right">
@@ -69,6 +78,9 @@
 <script>
   const params = new URLSearchParams(window.location.search);
   const areaName = params.get('area');
+  if (areaName) {
+    document.title = `${areaName}`;
+  }
 
   let loadingStates = {
     image: false,
@@ -91,6 +103,9 @@
       textContainer.style.display = hasText ? 'block' : 'none';
 
       if (!hasText) row.classList.add('only-chart');
+
+      const sortToggle = document.getElementById('sort-toggle-wrapper');
+      if (sortToggle) sortToggle.style.display = 'block';
     }
   }
 
@@ -157,9 +172,29 @@
     .then(res => res.ok ? res.text() : '')
     .then(text => {
       const textContainer = document.getElementById('area-text');
-      textContainer.innerHTML = text
-        ? text.trim().split(/\n\s*\n/).map(p => `<p>${p.trim()}</p>`).join('')
-        : '';
+      const formatted = text.trim().split(/\n\s*\n/).map(p => {
+        let cleaned = p.trim();
+
+        // Italicized quotes: "text"
+        cleaned = cleaned.replace(/"(.*?)"/g, (_, match) =>
+          `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 14px;">${match}</span>`
+        );
+
+        // Bold brackets: [text]
+        cleaned = cleaned.replace(/\[(.*?)\]/g, (_, match) =>
+          `<span style="font-weight: bold;">${match}</span>`
+        );
+
+        // Highlighted orange-emphasis: !!text!!
+        cleaned = cleaned.replace(/!!(.*?)!!/g, (_, match) =>
+          `<span style="font-weight: bold; font-style: italic; color: #f79646;">${match}</span>`
+        );
+
+        return `<p>${cleaned}</p>`;
+      }).join('');
+
+      textContainer.innerHTML = formatted;
+
       loadingStates.text = true;
       checkAndShowContent();
     })
@@ -200,25 +235,48 @@
       const cols = row.c;
       const area = cols[2]?.v?.trim();
       const sector = cols[3]?.v?.trim();
+      const bloc = cols[4]?.v?.trim() || '_no_bloc';
       const name = cols[8]?.v;
       const grade = cols[9]?.v;
+      const rawOrder = (cols[5]?.v ?? '').toString().trim();
+      let numericOrder = Infinity;
+
+      if (rawOrder) {
+        const normalized = rawOrder.replace(',', '.');
+        const parsed = parseFloat(normalized);
+        if (!isNaN(parsed)) numericOrder = parsed;
+      }
 
       if (area === areaName && sector && sectorSet.has(sector)) {
         matchingSectors.add(sector);
       }
 
+      if (!name) console.warn('Missing name for problem:', row);
+
       if (area === areaName && name && grade) {
         const rating = cols[12]?.v || '';
         problemsByGrade[grade] ??= [];
+        const yearRaw = cols[16]?.v?.toString().trim() || '';
+        const yearSort = parseInt(yearRaw);
+        const yearLabel = yearRaw || '–';
         problemsByGrade[grade].push({
           name,
+          grade,
           expo: cols[11]?.v || '',
           rating,
-          faYear: cols[20]?.v || '',
+          faYear: {
+            main: cols[15]?.v?.toString().trim() || '',
+            year: cols[16]?.v?.toString().trim() || ''
+          },
+          yearSort,
+          yearLabel,
           circ: cols[7]?.v || '',
           starScore: rating === '★' ? 2 : rating === '☆' ? 1 : 0,
           imageFiles: cols[18]?.v || '',
-          videoLink: cols[17]?.v || ''
+          videoLink: cols[17]?.v || '',
+          bloc,
+          order: numericOrder,
+          sector
         });
       }
     });
@@ -235,42 +293,144 @@
     );
 
     const section = document.getElementById('problems-section');
-    if (sortedGrades.length === 0) {
-      section.innerHTML = '<p>No problems found for this area.</p>';
-    } else {
-      sortedGrades.forEach(grade => {
-        const header = document.createElement('h2');
-        header.textContent = grade;
-        section.appendChild(header);
+    let currentSort = 'grade'; // default sort
 
-        const list = document.createElement('ul');
-        problemsByGrade[grade].sort((a, b) =>
-          b.starScore - a.starScore || a.name.localeCompare(b.name)
-        ).forEach(problem => {
-          const li = document.createElement('li');
-          const hasMedia = problem.imageFiles.trim() || problem.videoLink.trim();
-          const cameraIcon = hasMedia ? '📷' : '';
-          const nameStyle = grade === 'P' ? 'style="color: #999999;"' : '';
+    function renderProblems() {
+      section.innerHTML = ''; // clear existing
 
-          li.innerHTML = `
-            <div class="problem-row">
-              <span class="camera-icon">${cameraIcon}</span>
-              <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link">
-                <strong ${nameStyle}>${problem.name}</strong>
-              </a>
-              <span class="problem-meta">
-                <span class="rating">${problem.rating}</span>
-                <span class="expo">${problem.expo}</span>
-                <span class="fa-year">${problem.faYear}</span>
-                ${problem.circ !== '-' ? `<span class="circ">${problem.circ}</span>` : ''}
-              </span>
-            </div>
-          `;
-          list.appendChild(li);
+      // Add 'circuits' link if any climb has a circuit value
+      const hasCircuit = Object.values(problemsByGrade)
+        .flat()
+        .some(p => p.circ && p.circ !== '-');
+
+      if (hasCircuit) {
+        const placeholder = document.getElementById('sort-circuit-placeholder');
+        placeholder.innerHTML = ` | <a href="circuit.html?area=${encodeURIComponent(areaName)}" style="color: #777; text-decoration: none;">circuits</a>`;
+      }
+
+      if (currentSort === 'grade') {
+        sortedGrades.forEach(grade => {
+          const header = document.createElement('h2');
+          header.textContent = grade;
+          section.appendChild(header);
+
+          const list = document.createElement('ul');
+          problemsByGrade[grade].sort((a, b) =>
+            b.starScore - a.starScore || a.name.localeCompare(b.name)
+          ).forEach(problem => list.appendChild(renderProblemRow(problem, grade)));
+          section.appendChild(list);
         });
 
-        section.appendChild(list);
-      });
+      } else if (currentSort === 'year') {
+        const groupedByYear = {};
+        Object.values(problemsByGrade).flat().forEach(p => {
+          const key = p.yearLabel || '–';
+          groupedByYear[key] ??= [];
+          groupedByYear[key].push(p);
+        });
+
+        const sortedYearKeys = Object.keys(groupedByYear).sort((a, b) => {
+          const aNum = parseInt(a);
+          const bNum = parseInt(b);
+          return (isNaN(aNum) ? Infinity : aNum) - (isNaN(bNum) ? Infinity : bNum);
+        });
+
+        sortedYearKeys.forEach(year => {
+          const header = document.createElement('h2');
+          header.textContent = year;
+          section.appendChild(header);
+
+          const list = document.createElement('ul');
+          groupedByYear[year].sort((a, b) =>
+            a.order - b.order || b.starScore - a.starScore || a.name.localeCompare(b.name)
+          ).forEach(problem => list.appendChild(renderProblemRow(problem)));
+
+          section.appendChild(list);
+        });
+
+      } else {
+        const grouped = {};
+        const sectorTracker = new Set();
+
+        Object.values(problemsByGrade).flat().forEach(p => {
+          const key = p.bloc || '_no_bloc';
+          grouped[key] ??= [];
+          grouped[key].push(p);
+        });
+
+        const sortedBlocs = Object.keys(grouped).sort((a, b) => {
+          const parse = str => {
+            const match = str.match(/^(\d+)([A-Z]*)$/i);
+            if (!match) return [Infinity, ''];
+            return [parseInt(match[1]), match[2] || ''];
+          };
+
+          const [aNum, aSuffix] = parse(a);
+          const [bNum, bSuffix] = parse(b);
+
+          if (aNum !== bNum) return aNum - bNum;
+          return aSuffix.localeCompare(bSuffix);
+        });
+
+        sortedBlocs.forEach(bloc => {
+          const problems = grouped[bloc];
+          if (!problems.length) return;
+
+          const sector = problems[0].sector;
+          if (sector && !sectorTracker.has(sector)) {
+            const sectorHeader = document.createElement('h2');
+            const sectorLink = document.createElement('a');
+            sectorLink.href = `sector.html?sector=${encodeURIComponent(sector)}`;
+            sectorLink.textContent = sector;
+            sectorLink.style.textDecoration = 'none';
+            sectorLink.style.color = 'inherit';
+            sectorHeader.appendChild(sectorLink);
+            section.appendChild(sectorHeader);
+            sectorTracker.add(sector);
+          }
+
+          const list = document.createElement('ul');
+          problems.sort((a, b) =>
+            a.order - b.order || b.starScore - a.starScore || a.name.localeCompare(b.name)
+          ).forEach(problem => list.appendChild(renderProblemRow(problem, problem.grade)));
+
+          section.appendChild(list);
+          const spacer = document.createElement('div');
+          spacer.style.height = '0px';
+          section.appendChild(spacer);
+        });
+      }
+    }
+
+    function renderProblemRow(problem, gradeOverride) {
+      const li = document.createElement('li');
+      const hasMedia = problem.imageFiles.trim() || problem.videoLink.trim();
+      const cameraIcon = hasMedia ? '📷' : '';
+      const isPGrade = (gradeOverride || problem.grade) === 'P';
+      const nameStyle = isPGrade ? 'style="color: #999999;"' : '';
+
+      li.innerHTML = `
+        <div class="problem-row">
+          <span class="camera-icon">${cameraIcon}</span>
+          <div class="name-meta-combo">
+            <a href="problem.html?name=${encodeURIComponent(problem.name)}" class="problem-name-link">
+              <strong ${nameStyle}>${problem.name}</strong>
+            </a>
+            <span class="problem-meta">
+              <span class="rating">${problem.rating}</span>
+              <span class="expo">${problem.expo}</span>
+              ${currentSort === 'year' && problem.faYear.main
+                ? `<span class="fa-year">${problem.faYear.main}</span>`
+                : currentSort !== 'year' && (problem.faYear.main || problem.faYear.year)
+                  ? `<span class="fa-year">${problem.faYear.main}${problem.faYear.main && problem.faYear.year ? ', ' : ''}${problem.faYear.year}</span>`
+                  : ''
+              }
+            </span>
+          </div>
+        </div>
+      `;
+
+      return li;
     }
 
     const categories = {
@@ -347,8 +507,33 @@
       plugins: [ChartDataLabels, totalLabelPlugin]
     });
 
+    function updateSortSelection(selected) {
+      document.getElementById('sort-grade').style.textDecoration = selected === 'grade' ? 'underline' : 'none';
+      document.getElementById('sort-bloc').style.textDecoration = selected === 'bloc' ? 'underline' : 'none';
+      document.getElementById('sort-year').style.textDecoration = selected === 'year' ? 'underline' : 'none';
+    }
+
+    document.getElementById('sort-grade').addEventListener('click', () => {
+      currentSort = 'grade';
+      updateSortSelection('grade');
+      renderProblems();
+    });
+
+    document.getElementById('sort-bloc').addEventListener('click', () => {
+      currentSort = 'bloc';
+      updateSortSelection('bloc');
+      renderProblems();
+    });
+
+    document.getElementById('sort-year').addEventListener('click', () => {
+      currentSort = 'year';
+      updateSortSelection('year');
+      renderProblems();
+    });
+
     loadingStates.problems = true;
     checkAndShowContent();
+    renderProblems();
   })
   .catch(err => {
     console.error('Error loading data:', err);
@@ -357,13 +542,13 @@
     checkAndShowContent();
   });
 </script>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.querySelector('footer').style.visibility = 'visible';
-      }, 1000); // delay in milliseconds (e.g. 500 = 0.5 sec)
-    });
-  </script>
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelector('footer').style.visibility = 'visible';
+    }, 1000); // delay in milliseconds (e.g. 500 = 0.5 sec)
+  });
+</script>
 
   <script src="search.js"></script>
   
