@@ -16,10 +16,9 @@ The main aspects which characterize a climb such as it's steepness, hold-type, a
 • traverse ––	a climb which goes more sideways than up
 • wall	––	the general angle is more or less vertical 
 
-• crimps	––	small edges
+• edges	––	small edges
 • compression ––	squeezing climbing style
 • pockets ––	pockets for one, two or more fingers
-• pinches ––	protruding grips, pinched with thumb
 • slopers ––	rounded holds
 • underclings ––	inverted holds, grabbed from below
 
