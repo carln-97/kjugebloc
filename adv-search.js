@@ -2,7 +2,7 @@
 
 const gradeList = [
   "L", "5", "5+", "6A", "6A+", "6B", "6B+", "6C", "6C+",
-  "7A", "7A+", "7B", "7B+", "7C", "7C+", "8A", "8A+", "8B", "8B+", "8C"
+  "7A", "7A+", "7B", "7B+", "7C", "7C+", "8A", "8A+", "8B", "8B+", "8C", "P"
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let maxGradeIndex = gradeList.length - 1;
 
   noUiSlider.create(gradeSlider, {
-    start: [0, gradeList.length - 1],
+    start: [0, gradeList.indexOf("8C")],
     connect: true,
     step: 1,
     range: {
