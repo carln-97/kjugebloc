@@ -387,8 +387,9 @@ body.about-page .site-branding h1 {
 
 .problem-row {
   display: flex;
-  align-items: center
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  margin-left: -6px;
 }
 
 .camera-icon {
@@ -406,6 +407,10 @@ body.about-page .site-branding h1 {
   top: -1.2px; /* adjust as needed, try -1px or -3px too */
   font-size: 90%;
   margin-left: 4px;
+}
+
+.name-meta-combo {
+  display: inline-block;
 }
 
 #problems-section ul {
@@ -436,8 +441,15 @@ body.about-page .site-branding h1 {
 }
 
 .circ {
-  color: #f79646;
-  margin-left: 4px;
+  font-size: 80%;           /* smaller */
+  font-weight: 300;        /* bold */
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;   /* helps with vertical alignment */
+  position: relative;
+  top: -1px;                /* nudges it upward */
+  color: #f79646;           /* keep the original orange */
+  margin-left: 4px; 
 }
 
 .problem-name-link {
@@ -449,16 +461,13 @@ body.about-page .site-branding h1 {
 .problem-name-link strong {
   position: relative;
   display: inline-block;
+  text-decoration: none;
 }
 
-.problem-name-link:hover strong::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 4px; /* Adjust distance below text */
-  width: calc(100% - 0.001em); /* Reduce width to exclude the last character(s) */
-  height: 1px; /* Thickness of underline */
-  background-color: #f9f9f9;
+.problem-name-link:hover strong {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 .area-layout {
@@ -537,7 +546,6 @@ body.about-page .site-branding h1 {
   border-radius: 8px;
   object-fit: cover;
 }
-
 
 
 
@@ -706,6 +714,14 @@ body.about-page .site-branding h1 {
 .caption-name-link:hover {
   text-decoration: underline;
 }
+
+.breadcrumb-separator {
+  padding: 0 0.6em;
+  color: #aaa;
+}
+
+
+
 
 
 
@@ -1325,6 +1341,45 @@ body.map-page .site-branding h1 {
   visibility: hidden;
 }
 
+.style-box {
+  display: inline-block;          /* allow width to fit content */
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  padding: 16px 34px 8px 14px;
+  max-width: 100%;                /* prevent overflow on small screens */
+  box-sizing: border-box;         /* include padding in total width */
+}
+
+#styles-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space between row groups */
+}
+
+.style-row {
+  display: grid;
+  grid-template-columns: repeat(4, 120px); /* or 120px, adjust as needed */
+  column-gap: 8px;
+  row-gap: 6px;
+}
+
+.style-checkbox {
+  font-size: 13px;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+
+
+
+
+
+/* --- ACCESS page --- */
+
+.about-page .access-image .image-wrapper img {
+  width: 100%;
+  max-width: 100%;
+}
 
 
 
@@ -1365,7 +1420,7 @@ body.store-page .site-branding h1 {
 }
 
 /* --- Lightbox for store images --- */
-#lightbox {
+body.store-page #lightbox {
   display: none;
   position: fixed;
   top: 0; left: 0;
@@ -1377,7 +1432,7 @@ body.store-page .site-branding h1 {
   cursor: zoom-out;
 }
 
-#lightbox-img {
+body.store-page #lightbox-img {
   max-width: 90vw;
   max-height: 90vh;
   border-radius: 6px;
@@ -1387,6 +1442,100 @@ body.store-page .site-branding h1 {
 
 
 
+
+/* --- CIRCUIT page --- */
+
+.circuit-page .area-columns {
+  display: grid;
+  margin-right: 100;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  gap: 20px;
+  display: flex;
+  align-items: flex-start;
+}
+
+#col-1 {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.circuit-page .problem-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.circuit-page .problem-name-link {
+  font-weight: 600;
+  display: inline-block;
+  max-width: 18em; /* Adjust to taste */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.circuit-page .problem-name-link:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.circuit-page .problem-meta {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.circuit-page #col-1 {
+  overflow: visible;
+  padding-left: 0px;  /* Optional: add slight indent */
+}
+
+.circuit-page {
+  font-family: 'Roboto', sans-serif;
+  background-color: #2d2d2d;
+  color: #f9f9f9;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.circuit-page h2 {
+  font-size: 24px;
+  color: #f9f9f9;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.circuit-page h2::before {
+  content: "[";
+  margin-right: 2px;
+}
+
+.circuit-page h2::after {
+  content: "]";
+  margin-left: 2px;
+}
+
+#kjugekull-wrapper ul,
+#panshamn-wrapper ul {
+  list-style: none;
+  padding-left: 0;
+  margin-left: -25px;
+  margin-bottom: 30px;
+  margin-top: 0;
+}
+
+.circuit-page li {
+  margin-bottom: 6px;
+}
+
+body.circuit-page .site-branding h1 {
+  visibility: hidden;
+}
 
 
 
