@@ -218,30 +218,75 @@
         const additionalInfo = problem[23]?.v || '';
         const additionalEl = document.getElementById('problem-additional');
 
+        const relatedClimbsRaw = problem[24]?.v || '';
+        const relatedClimbs = relatedClimbsRaw.split(';').map(name => name.trim()).filter(Boolean);
+
+        // Build a map of problem names → grade from all rows
+        const allProblems = Object.fromEntries(
+          rows
+            .map(r => r.c)
+            .filter(cols => cols[8]?.v && cols[9]?.v)
+            .map(cols => [cols[8].v.trim(), cols[9].v.trim()])
+        );
+
+        let relatedHTML = '';
+        if (relatedClimbs.length > 0) {
+          const links = relatedClimbs.map(climb => {
+            const grade = allProblems[climb] || '';
+            return `<a href="problem.html?name=${encodeURIComponent(climb)}" class="caption-name-link">
+                      ${climb}
+                    </a>
+                    <span style="font-weight: bold; margin-left: 4px;">${grade}</span>`;
+          }).join(' <span style="color: #555; font-size: 120%;">|</span> ');
+
+          relatedHTML = `
+            <div style="margin-bottom: 18px;">
+              <span style="font-weight: bold; font-size: 13px; color: #666;">Related Climbs</span>
+              <div style="margin-top: 4px;">${links}</div>
+            </div>
+          `;
+        }
+
+        let formatted = '';
         if (additionalInfo) {
-          const formatted = additionalInfo
+          formatted = additionalInfo
             .split(';')
             .map(part => {
-              let cleaned = part.trim();
+              let raw = part.trim();
 
-              cleaned = cleaned.replace(/"(.*?)"/g, (_, match) =>
+              // Extract [bracketed] text if present
+              const bracketMatch = raw.match(/\[(.*?)\]/);
+              const bracketText = bracketMatch ? bracketMatch[1].trim() : '';
+              const otherText = raw.replace(/\[.*?\]/, '').trim();
+
+              // Run formatting on the "other" part
+              let formattedOther = otherText;
+
+              formattedOther = formattedOther.replace(/"(.*?)"/g, (_, match) =>
                 `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 14px;">${match}</span>`
               );
 
-              cleaned = cleaned.replace(/\[(.*?)\]/g, (_, match) =>
-                `<span style="font-weight: bold;">${match}</span>`
-              );
-
-              cleaned = cleaned.replace(/!(.*?)!/g, (_, match) =>
+              formattedOther = formattedOther.replace(/!(.*?)!/g, (_, match) =>
                 `<span style="font-weight: bold; font-style: italic; color: #f79646;">${match}</span>`
               );
 
-              return `<div style="margin-bottom: 6px;">${cleaned}</div>`;
-            })
-            .filter(Boolean)
-            .join('');
+              // Final HTML
+              const bracketHTML = bracketText
+                ? `<div style="font-weight: bold; font-size: 13px; color: #666;">${bracketText}</div>`
+                : '';
 
-          additionalEl.innerHTML = formatted;
+              const otherHTML = formattedOther
+                ? `<div style="margin-top: 2px;">${formattedOther}</div>`
+                : '';
+
+              return `<div style="margin-bottom: 6px;">${bracketHTML}${otherHTML}</div>`;
+            })
+            .join('');
+        }
+
+        // ✅ Show box if either has content
+        if (relatedClimbs.length > 0 || additionalInfo) {
+          additionalEl.innerHTML = relatedHTML + formatted;
           additionalEl.style.display = 'block';
         } else {
           additionalEl.style.display = 'none';
