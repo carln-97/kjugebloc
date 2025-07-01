@@ -148,9 +148,13 @@
               return;
             }
 
-            line = line.replace(/'''(.*?)'''/g, (_, match) =>
-              `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; color: #aaa;">${match}</span>`
-            );
+            line = line
+              .replace(/'''(.*?)'''/g, (_, match) =>
+                `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; color: #aaa;">${match}</span>`
+              )
+              .replace(/★/g, '<span class="star-symbol">★</span>')
+              .replace(/☆/g, '<span class="star-symbol">☆</span>')
+              .replace(/\$!\$/g, '<span class="expo-symbol">!</span>')
 
             if (!line.startsWith('»') && inArrowList) {
               html += '</ul>';
