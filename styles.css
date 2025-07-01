@@ -295,6 +295,18 @@ body.about-page .site-branding h1 {
   font-weight: bold;
 }
 
+.about-page .star-symbol {
+  color: #f9f9f9;
+  margin-right: 6px;
+}
+
+.about-page .expo-symbol {
+  font-family: 'Arial Black', sans-serif;
+  color: #f9f9f9;
+  margin-left: 6px;
+}
+
+
 
 
 
@@ -547,6 +559,22 @@ body.about-page .site-branding h1 {
   object-fit: cover;
 }
 
+#area-caption {
+  display: none;
+  text-align: center;
+  margin-top: 10px;
+  align-self: center;
+}
+
+#area-description {
+  font-size: 12px;
+  color: #ccc;
+}
+
+#area-photographer {
+  font-size: 12px;
+  color: #777;
+}
 
 
 
@@ -1429,7 +1457,7 @@ body.store-page #lightbox {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  cursor: zoom-out;
+  cursor: default;
 }
 
 body.store-page #lightbox-img {
@@ -1439,6 +1467,33 @@ body.store-page #lightbox-img {
   box-shadow: 0 0 20px rgba(0,0,0,0.6);
 }
 
+.product-price {
+  margin-right: 20px;
+  display: inline-block;
+}
+
+.product-meta {
+  margin-top: 12px; /* separates it from the paragraph above */
+  display: flex;
+  gap: 20px; /* space between Price and Sizes */
+  font-size: 14px;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #777;
+  margin-right: 6px;
+  margin-left: 6px;
+}
+
+.new-price {
+  color: #fdc14a;  /* KjugeBloc's yellow highlight */
+  font-weight: bold;
+}
+
+.sold-out {
+  color: #777;
+}
 
 
 
