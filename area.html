@@ -59,9 +59,13 @@
           </div>
           <section id="problems-section"></section>
         </div>
-        <div class="area-right">
-          <img id="area-image" alt="Area photo" style="display: none;" />
-        </div>
+          <div class="area-right" id="area-visual" style="display: none;">
+            <img id="area-image" alt="Area photo" />
+            <div id="area-caption">
+              <div id="area-description"></div>
+              <div id="area-photographer"></div>
+            </div>
+          </div>
       </div>
     </div>
   </main>
@@ -88,19 +92,30 @@
     problems: false
   };
 
-  loadAreaImageFromCSV(areaName);
+  window.addEventListener("load", () => {
+    loadAreaImageFromCSV(areaName);
+  });
 
   function checkAndShowContent() {
-    const areaImg = document.getElementById('area-image');
-    const textContainer = document.getElementById('area-text');
-    const row = document.querySelector('.area-content-row');
-
     if (loadingStates.image && loadingStates.text && loadingStates.problems) {
+      const areaImg = document.getElementById('area-image');
+      const textContainer = document.getElementById('area-text');
+      const visualEl = document.getElementById('area-visual');
+      const captionEl = document.getElementById('area-caption');
+      const row = document.querySelector('.area-content-row');
+
       const hasImage = areaImg.complete && areaImg.naturalWidth > 0;
       const hasText = textContainer.textContent && textContainer.textContent !== 'Loading description...';
 
+      // Ensure image/text visibility is set only now
       areaImg.style.display = hasImage ? 'block' : 'none';
       textContainer.style.display = hasText ? 'block' : 'none';
+
+      if (hasImage || hasText) {
+        visualEl.style.display = 'flex';
+      }
+
+      captionEl.style.display = (hasImage && hasText) ? 'block' : 'none';
 
       if (!hasText) row.classList.add('only-chart');
 
@@ -127,45 +142,65 @@
     return url;
   }
 
-  function loadAreaImageFromCSV(areaName) {
-    const areaImg = document.getElementById('area-image');
+function loadAreaImageFromCSV(areaName) {
+  const visualEl = document.getElementById('area-visual');
+  const areaImg = document.getElementById('area-image');
+  const descriptionEl = document.getElementById('area-description');
+  const photographerEl = document.getElementById('area-photographer');
+  const captionEl = document.getElementById('area-caption');
 
-    fetch('images/area-photos/area-photos.csv')
-      .then(res => res.text())
-      .then(csv => {
-        const lines = csv.trim().split('\n');
-        lines.shift(); // remove header
+  fetch('images/area-photos/area-photos.csv')
+    .then(res => res.text())
+    .then(csv => {
+      const lines = csv.trim().split('\n');
+      lines.shift(); // remove header
 
-        for (const line of lines) {
-          const [csvArea, link, caption] = line.split(',').map(s => s.trim());
-          if (csvArea.toLowerCase() === areaName.toLowerCase()) {
-            areaImg.src = toDirectImgurURL(link);
-            areaImg.alt = caption || '';
-            areaImg.onload = () => {
-              loadingStates.image = true;
-              checkAndShowContent();
-            };
-            areaImg.onerror = () => {
-              areaImg.style.display = 'none';
-              loadingStates.image = true;
-              checkAndShowContent();
-            };
-            return;
-          }
+      let found = false;
+
+      for (const line of lines) {
+        const [csvArea, link, desc, photo] = line.split(',').map(s => s.trim());
+
+        if (csvArea.toLowerCase() === areaName.toLowerCase()) {
+          found = true;
+
+          descriptionEl.textContent = desc || '';
+          photographerEl.textContent = photo ? `Photo: ${photo}` : '';
+
+          areaImg.onload = () => {
+            loadingStates.image = true;
+            checkAndShowContent();
+          };
+
+          areaImg.onerror = () => {
+            areaImg.style.display = 'none';
+            captionEl.style.display = 'none';
+            loadingStates.image = true;
+            checkAndShowContent();
+          };
+
+          areaImg.src = toDirectImgurURL(link);
+          areaImg.alt = desc || '';
+
+          return;
         }
+      }
 
-        // No match
+      if (!found) {
         areaImg.style.display = 'none';
+        captionEl.style.display = 'none';
         loadingStates.image = true;
         checkAndShowContent();
-      })
-      .catch(err => {
-        console.error('Failed to load area image:', err);
-        areaImg.style.display = 'none';
-        loadingStates.image = true;
-        checkAndShowContent();
-      });
-  }
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load area image:', err);
+      areaImg.style.display = 'none';
+      captionEl.style.display = 'none';
+      loadingStates.image = true;
+      checkAndShowContent();
+    });
+}
+
 
   const areaTextPath = `text/area-text/${sanitizeName(areaName)}.txt`;
   fetch(areaTextPath)
