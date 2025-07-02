@@ -212,19 +212,23 @@ function loadAreaImageFromCSV(areaName) {
 
         // Italicized quotes: "text"
         cleaned = cleaned.replace(/"(.*?)"/g, (_, match) =>
-          `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 14px;">${match}</span>`
+          `<span style="font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 13px;">${match}</span>`
         );
 
-        // Bold brackets: [text]
-        cleaned = cleaned.replace(/\[(.*?)\]/g, (_, match) =>
-          `<span style="font-weight: bold;">${match}</span>`
+
+
+        // Markdown-style links: [text] (url)
+        cleaned = cleaned.replace(/\[(.*?)\]\s*\((.*?)\)/g, (_, text, url) =>
+          `<a href="${url}" style="text-decoration: underline; color: inherit;" target="_blank" rel="noopener noreferrer">${text}</a>`
         );
 
-        // Highlighted orange-emphasis: !!text!!
-        cleaned = cleaned.replace(/!!(.*?)!!/g, (_, match) =>
-          `<span style="font-weight: bold; font-style: italic; color: #f79646;">${match}</span>`
-        );
-
+        // Highlighted orange-emphasis: !!text!! with <s>...</s> inside for bold
+        cleaned = cleaned.replace(/!!(.*?)!!/g, (_, match) => {
+          const inner = match.replace(/<s>(.*?)<\/s>/g, (_, bold) =>
+            `<strong>${bold}</strong>`
+          );
+          return `<span style="font-style: italic; color: #f79646;">${inner}</span>`;
+        });
         return `<p>${cleaned}</p>`;
       }).join('');
 
