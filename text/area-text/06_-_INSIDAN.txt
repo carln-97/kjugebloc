@@ -1,1 +1,3 @@
 TEST
+
+!!<s>NATURE-RESERVE:</s> all boulders in the sector are located within a nature-reserve — please respect and follow the restrictions on the [Access page] (access.html).!!
