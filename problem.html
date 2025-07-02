@@ -153,9 +153,18 @@
           </span>
         `;
 
-        const formattedDescription = description.replace(/"(.*?)"/g, (_, match) =>
+        let formattedDescription = description.trim();
+
+        // "quoted text" → Libre Baskerville italic
+        formattedDescription = formattedDescription.replace(/"(.*?)"/g, (_, match) =>
           `<span style="font-family: 'Libre Baskerville', serif; font-style: italic;">${match}</span>`
         );
+
+        // !!text!! → bold, italic, orange, ends with "!"
+        formattedDescription = formattedDescription.replace(/!!(.*?)!!/g, (_, match) =>
+          `<span style="font-weight: bold; font-style: italic; color: #f79646;">${match}!</span>`
+        );
+
         document.getElementById('problem-description').innerHTML = formattedDescription;
 
         const faName = problem[15]?.v || '';
