@@ -995,3 +995,65 @@ nav {
   margin-top: 10px;
   text-align: center; /* or left, if you want it aligned with h1 */
 }
+
+/* responsive behaviour */
+  @media screen and (max-width: 768px) {
+
+    /* set body padding to 0 so avoid having to use negative margins for child elements and other content */
+    body {
+      padding: 0;
+    }
+    main {
+      padding: 20px;
+    }
+
+    .site-header {
+      padding: 0;
+      position: sticky;
+      margin: 0; /* no need for negative margins since body padding is 0 */
+    }
+
+    /* make header content overflow behaviour a bit neater */
+    .header-content {
+      align-items: center;
+      padding: 16px;
+      gap: 8px;
+      overflow-y: scroll;
+    }
+
+    /* make nav links a bit smaller and avoid wrapping longer titles*/
+    .nav-links {
+      align-items: center;
+      font-size: 14px;
+    }
+    .nav-links li {
+      white-space: nowrap;
+    }
+
+    /* hide h1 title and reduce logo size to save space */
+    .site-branding h1 {
+      display: none;
+    }
+    .logo {
+      height: 24px;
+      margin: 0;
+    }
+
+    /* display content in single column, left aligned layout */
+    .two-column,
+    .about-row,
+    .about-row-reverse,
+    .area-columns,
+    .area-content-row,
+    .problems-and-image-row,
+    .chart-wrapper,
+    .problem-layout {
+      display: block !important
+    }
+    #problems-section ul {
+      margin-left: 0;
+    }
+    #left-locations {
+      text-align: initial;
+    }
+  }
